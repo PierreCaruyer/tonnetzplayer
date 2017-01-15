@@ -3,3 +3,4 @@ Goals:
 TODO:
 -delete keyboard initialization
 -replace with MIDI initialization
+-override onNote

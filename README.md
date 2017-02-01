@@ -1,6 +1,4 @@
-Goals:
--merge MIDI.js with TonnetzViz
-TODO:
--delete keyboard initialization
--replace with MIDI initialization
--override onNote
+Next goals:
+
+-fix notes schedule
+-Parse input midi file

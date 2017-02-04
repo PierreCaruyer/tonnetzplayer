@@ -354,11 +354,13 @@
       </canvas>
     </div>
 
-	<button onclick="MIDI.Player.start()">Play</button>
-	<button onclick="MIDI.Player.pause(true)">Pause</button>
-	<button onclick="MIDI.Player.stop()">Stop</button>
-	<button onclick="MIDI.Player.stop()">Import</button>
-
+	<div style="margin: 0 auto; width: 160px; float: right;">
+		<input type="image" src="./images/pause.png" align="absmiddle" value="pause" onclick="pausePlayStop()" id="pausePlayStop">
+		<input type="image" src="./images/stop.png" align="absmiddle" value="stop" onclick="pausePlayStop(true)">
+		<input type="image" src="./images/backward.png" align="absmiddle" value="stop" onclick="player.getNextSong(-1);">
+		<input type="image" src="./images/forward.png" align="absmiddle" value="stop" onclick="player.getNextSong(+1);">
+	</div>
+	
     <script type="text/javascript" src="js/jquery.min.js"></script>
     <script type="text/javascript" src="js/jquery.mousewheel.min.js"></script>
     <script type="text/javascript" src="js/bootstrap.min.js"></script>
@@ -382,7 +384,7 @@
 		log: function() {}
 	};
 	var pausePlayStop = function(stop) {
-		var d = document.getElementById("pausePlayStop");
+		var pause = document.getElementById("pause");
 		if (stop) {
 			MIDI.Player.stop();
 			d.src = "./images/play.png";
@@ -394,7 +396,7 @@
 			MIDI.Player.resume();
 		}
 	};
-	eventjs.add(window, "load", function(event) {
+	/*eventjs.add(window, "load", function(event) {
 		var link = document.createElement("link");
 		link.href = "//fonts.googleapis.com/css?family=Oswald";
 		link.ref = "stylesheet";
@@ -418,7 +420,7 @@
 				player.loadFile(song[songid++ % song.length], player.start);
 			}
 		});
-	});
+	});*/
 	// Begin loading indication.
 	var player;
 	// MIDI files from Disklavier World

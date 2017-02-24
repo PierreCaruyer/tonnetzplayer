@@ -3,6 +3,7 @@ var tonnetz = (function() {
 
   var module = {};
 
+  var USER_MODE = 'READ'; //Possible modes are 'READ' or 'WRITE'
   var TONE_NAMES = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
   var STATE_OFF = 0,
       STATE_GHOST = 1,
@@ -494,6 +495,14 @@ var tonnetz = (function() {
 
     this.draw(true);
   };
+
+  module.userMode = function() {
+    return USER_MODE;
+  }
+
+  module.changeUserMode = function(newUserMode) {
+    USER_MODE = newUserMode;
+  }
 
   return module;
 })();

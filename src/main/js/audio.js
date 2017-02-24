@@ -80,7 +80,7 @@ var audio = (function() {
 		output.send([0x80 + channel, note, 0], delay * 1000);
 	};*/
 
-  module.noteOn = function(channel, pitch) {
+  /*module.noteOn = function(channel, pitch) {
     if (!audioCtx || !enabled) return;
 
     if (!(pitch in notes[channel])) {
@@ -98,7 +98,117 @@ var audio = (function() {
       notes[channel][pitch].stop();
       delete notes[channel][pitch];
     }
-  };
+  };*/
+
+	module.noteOn = function(channelId, noteId, velocity, delay) {
+			delay = delay || 0;
+
+			/// check whether the note exists
+			var channel = root.channels[channelId];
+			var instrument = channel.instrument;
+			var bufferId = instrument + '' + noteId;
+			var buffer = audioBuffers[bufferId];
+			if (!buffer) {
+// 				console.log(MIDI.GM.byId[instrument].id, instrument, channelId);
+				return;
+			}
+
+			/// convert relative delay to absolute delay
+			if (delay < ctx.currentTime) {
+				delay += ctx.currentTime;
+			}
+		
+			/// create audio buffer
+			if (useStreamingBuffer) {
+				var source = ctx.createMediaElementSource(buffer);
+			} else { // XMLHTTP buffer
+				var source = ctx.createBufferSource();
+				source.buffer = buffer;
+			}
+
+			/// add effects to buffer
+			if (effects) {
+				var chain = source;
+				for (var key in effects) {
+					chain.connect(effects[key].input);
+					chain = effects[key];
+				}
+			}
+
+			/// add gain + pitchShift
+			var gain = (velocity / 127) * (masterVolume / 127) * 2 - 1;
+			source.connect(ctx.destination);
+			source.playbackRate.value = 1; // pitch shift 
+			source.gainNode = ctx.createGain(); // gain
+			source.gainNode.connect(ctx.destination);
+			source.gainNode.gain.value = Math.min(1.0, Math.max(-1.0, gain));
+			source.connect(source.gainNode);
+			///
+			if (useStreamingBuffer) {
+				if (delay) {
+					return setTimeout(function() {
+						buffer.currentTime = 0;
+						buffer.play()
+					}, delay * 1000);
+				} else {
+					buffer.currentTime = 0;
+					buffer.play()
+				}
+			} else {
+				source.start(delay || 0);
+			}
+			///
+			sources[channelId + '' + noteId] = source;
+			///
+			return source;
+		};
+
+		module.noteOff = function(channelId, noteId, delay) {
+			embededAudio.noteOff(channelId, noteId, delay);
+
+			/// check whether the note exists
+			var channel = root.channels[channelId];
+			var instrument = channel.instrument;
+			var bufferId = instrument + '' + noteId;
+			var buffer = audioBuffers[bufferId];
+			if (buffer) {
+				if (delay < ctx.currentTime) {
+					delay += ctx.currentTime;
+				}
+				///
+				var source = sources[channelId + '' + noteId];
+				if (source) {
+					if (source.gainNode) {
+						// @Miranet: 'the values of 0.2 and 0.3 could of course be used as 
+						// a 'release' parameter for ADSR like time settings.'
+						// add { 'metadata': { release: 0.3 } } to soundfont files
+						var gain = source.gainNode.gain;
+						gain.linearRampToValueAtTime(gain.value, delay);
+						gain.linearRampToValueAtTime(-1.0, delay + 0.3);
+					}
+					///
+					if (useStreamingBuffer) {
+						if (delay) {
+							setTimeout(function() {
+								buffer.pause();
+							}, delay * 1000);
+						} else {
+							buffer.pause();
+						}
+					} else {
+						if (source.noteOff) {
+							source.noteOff(delay + 0.5);
+						} else {
+							source.stop(delay + 0.5);
+						}
+					}
+					///
+					delete sources[channelId + '' + noteId];
+					///
+					return source;
+				}
+			}
+		};
 
   module.allNotesOff = function(channel) {
     for (var i=0; i<CHANNELS; i++) {

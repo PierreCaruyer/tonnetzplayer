@@ -396,7 +396,7 @@
 			MIDI.Player.resume();
 		}
 	};
-	/*eventjs.add(window, "load", function(event) {
+	eventjs.add(window, "load", function(event) {
 		var link = document.createElement("link");
 		link.href = "//fonts.googleapis.com/css?family=Oswald";
 		link.ref = "stylesheet";
@@ -420,7 +420,11 @@
 				player.loadFile(song[songid++ % song.length], player.start);
 			}
 		});
-	});*/
+	});
+
+	/*var midiFileParser = require('midi-file-parser');
+	var file = require('fs').readFileSync('filename.mid', 'binary');
+	var midi = midiFileParser(file);*/
 	// Begin loading indication.
 	var player;
 	// MIDI files from Disklavier World

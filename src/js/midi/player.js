@@ -297,7 +297,6 @@ var startAudio = function(currentTime, fromCache, onsuccess) {
 			offset = queuedTime;
 			continue;
 		}
-
 		///
 		currentTime = queuedTime - offset;
 		///

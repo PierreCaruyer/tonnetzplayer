@@ -13,8 +13,8 @@ if (typeof MIDI.Player === 'undefined') MIDI.Player = {};
 
 var midi = MIDI.Player;
 midi.currentTime = 0;
-midi.endTime = 0; 
-midi.restart = 0; 
+midi.endTime = 0;
+midi.restart = 0;
 midi.playing = false;
 midi.timeWarp = 1;
 midi.startDelay = 0;
@@ -189,7 +189,7 @@ midi.getFileInstruments = function() {
 // Playing the audio
 
 var eventQueue = []; // hold events to be triggered
-var queuedTime; // 
+var queuedTime; //
 var startTime = 0; // to measure time elapse
 var noteRegistrar = {}; // get event for requested note
 var onMidiEvent = undefined; // listener
@@ -214,12 +214,16 @@ var scheduleTracking = function(channel, note, currentTime, offset, message, vel
 		}
 		midi.currentTime = currentTime;
 		///
+    var previousEvent = eventQueue[0].event;
+
 		eventQueue.shift();
+    tonnetz.noteOn(channel, note);
+    tonnetz.noteOff(channel, note);
 		///
 		if (eventQueue.length < 1000) {
 			startAudio(queuedTime, true);
 		} else if (midi.currentTime === queuedTime && queuedTime < midi.endTime) { // grab next sequence
-			startAudio(queuedTime, true);
+      startAudio(queuedTime, true);
 		}
 	}, currentTime - offset);
 };
@@ -293,6 +297,7 @@ var startAudio = function(currentTime, fromCache, onsuccess) {
 			offset = queuedTime;
 			continue;
 		}
+
 		///
 		currentTime = queuedTime - offset;
 		///
@@ -300,6 +305,7 @@ var startAudio = function(currentTime, fromCache, onsuccess) {
 		if (event.type !== 'channel') {
 			continue;
 		}
+
 		///
 		var channelId = event.channel;
 		var channel = MIDI.channels[channelId];
@@ -321,7 +327,7 @@ var startAudio = function(currentTime, fromCache, onsuccess) {
 				eventQueue.push({
 				    event: event,
 				    time: queueTime,
-				    source: tonnetz.noteOn(channelId, event.noteNumber, event.velocity, delay),
+				    source: MIDI.noteOn(channelId, event.noteNumber, event.velocity, delay),
 				    interval: scheduleTracking(channelId, note, queuedTime + midi.startDelay, offset - foffset, 144, event.velocity)
 				});
 				messages++;
@@ -332,7 +338,7 @@ var startAudio = function(currentTime, fromCache, onsuccess) {
 				eventQueue.push({
 				    event: event,
 				    time: queueTime,
-				    source: tonnetz.noteOff(channelId, event.noteNumber, delay),
+				    source: MIDI.noteOff(channelId, event.noteNumber, delay),
 				    interval: scheduleTracking(channelId, note, queuedTime, offset - foffset, 128, 0)
 				});
 				break;

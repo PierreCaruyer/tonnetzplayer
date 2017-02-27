@@ -2,12 +2,12 @@ var MIDIFileHandler = (function() {
 	"use strict";
 
 	var module = {};
+	module.song = [];
 
 	var MIDIFileParser,
 			fileSync;
 
 	var filename,
-			song,
 			usr_mode;
 
 	module.init = function() {
@@ -29,7 +29,7 @@ var MIDIFileHandler = (function() {
 
 	$('#file').on('change', function(){
 		filename = this.files[0].name;
-		song = MIDIData(filename);
+		module.song = MIDIData(filename);
 	});
 
 	module.createMIDIFile = function(filename) {

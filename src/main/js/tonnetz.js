@@ -59,8 +59,8 @@ var tonnetz = (function() {
   };
 
 
-  module.noteOn = function(c, pitch, velocity, delay) {
-    MIDI.noteOn(c, pitch, velocity, delay);
+  module.noteOn = function(c, pitch) {
+    //MIDI.noteOn(c, pitch, velocity, delay);
 
     if (!(pitch in channels[c].pitches)) {
       var i = pitch%12;
@@ -80,8 +80,8 @@ var tonnetz = (function() {
     this.draw();
   };
 
-  module.noteOff = function(c, pitch, delay) {
-    MIDI.noteOff(c, pitch, delay);
+  module.noteOff = function(c, pitch) {
+    //MIDI.noteOff(c, pitch, delay);
 
     if (pitch in channels[c].pitches) {
       var i = pitch%12;
@@ -196,6 +196,9 @@ var tonnetz = (function() {
     }
   };
 
+  module.toneReleased = function(tone) {
+    releaseTone(tone);
+  }
 
   var ghostsInterval = null;
 

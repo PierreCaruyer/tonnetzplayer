@@ -104,7 +104,7 @@
 				if (delay) {
 					return setTimeout(function() {
 						buffer.currentTime = 0;
-						buffer.play()
+						buffer.play();
 					}, delay * 1000);
 				} else {
 					buffer.currentTime = 0;

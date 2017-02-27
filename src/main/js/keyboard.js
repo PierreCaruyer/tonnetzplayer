@@ -33,14 +33,18 @@ var keyboard = (function() {
     $(window).keyup(onKeyUp);*/
   };
 
-  /*var getPitchFromKeyboardEvent = function(event) {
+  var getPitchFromKeyboardEvent = function(event) {
     var note = BASE_PITCH[module.layout] + LAYOUTS[module.layout][event.which];
 
     if (isFinite(note) && !event.ctrlKey && !event.altKey && !event.metaKey)
       return note;
     else
       return null;
-  };*/
+  };
+
+  module.eventToNote = function(event) {
+    return getPitchFromKeyboardEvent(event);
+  };
 
   var getChannel = function() {
     var channel = Number($('#midi-channel').val());
@@ -49,8 +53,7 @@ var keyboard = (function() {
     return channel;
   };
 
-
- /* var onKeyDown = function(event) {
+  var onKeyDown = function(event) {
     if (somethingHasFocus()) return;
 
     var note = getPitchFromKeyboardEvent(event);
@@ -68,7 +71,15 @@ var keyboard = (function() {
       tonnetz.noteOff(16, note);
       return false;
     }
-  };*/
+  };
+
+  module.keyDownTriggered = function(event) {
+
+  }
+
+  module.keyUpTriggered = function(event) {
+
+  }
 
   var charsToKeyCodes = function(mapping) {
     // map letters
@@ -89,6 +100,14 @@ var keyboard = (function() {
       }
     }
   };
+
+  module.layers = function() {
+    return LAYOUTS;
+  }
+
+  module.basePitch = function() {
+    return BASE_PITCH;
+  }
 
   return module;
 })();

@@ -44,7 +44,6 @@ var audio = (function() {
   var ATTACK = 0.05;
   var RELEASE = 0.1;
 
-
   module.init = function() {
     var AudioContext = window.AudioContext || window.webkitAudioContext;
     if (AudioContext) {

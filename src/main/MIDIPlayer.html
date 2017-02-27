@@ -354,11 +354,17 @@
       </canvas>
     </div>
 
-	<div style="margin: 0 auto; width: 160px; float: right;">
+	<div style="margin: 0 auto; width: 160px; float: right;" id="pause">
 		<input type="image" src="./images/pause.png" align="absmiddle" value="pause" onclick="pausePlayStop()" id="pausePlayStop">
 		<input type="image" src="./images/stop.png" align="absmiddle" value="stop" onclick="pausePlayStop(true)">
 		<input type="image" src="./images/backward.png" align="absmiddle" value="stop" onclick="player.getNextSong(-1);">
 		<input type="image" src="./images/forward.png" align="absmiddle" value="stop" onclick="player.getNextSong(+1);">
+		<input type="file" id="file">
+		<select id="mode-select">
+			<option value="record">Record</option>
+			<option value="play">Play</option>
+			<option value="train">Train</option>
+		</select>
 	</div>
 	
     <script type="text/javascript" src="js/jquery.min.js"></script>
@@ -376,6 +382,8 @@
     <script type="text/javascript" src="color-schemes/default.js"></script>
     <script type="text/javascript" src="color-schemes/greenonblack.js"></script>
     <script type="text/javascript" src="color-schemes/apollo.js"></script>
+		<script type="text/javascript" src="js/require.js"></script>
+		<script type="text/javascript" src="js/midi.file.handler.js"></script>
 
     <script type="text/javascript" src="js/main.js"></script>
 

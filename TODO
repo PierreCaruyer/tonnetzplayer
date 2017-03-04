@@ -1,0 +1,4 @@
+Next goals:
+
+-Parse input midi file
+-Make the app cross-origin, works fine on firefox for now

@@ -361,9 +361,8 @@
 		<input type="image" src="./images/forward.png" align="absmiddle" value="stop" onclick="player.getNextSong(+1);">
 		<input type="file" id="file">
 		<select id="mode-select">
-			<option value="record">Record</option>
 			<option value="play">Play</option>
-			<option value="train">Train</option>
+			<option value="record">Record</option>
 		</select>
 	</div>
 	
@@ -392,18 +391,14 @@
 		log: function() {}
 	};
 	var pausePlayStop = function(stop) {
-		var pause = document.getElementById("pause");
-		if (stop) {
+		if (stop)
 			MIDI.Player.stop();
-			d.src = "./images/play.png";
-		} else if (MIDI.Player.playing) {
-			d.src = "./images/play.png";
+		else if (MIDI.Player.playing)
 			MIDI.Player.pause(true);
-		} else {
-			d.src = "./images/pause.png";
+		else
 			MIDI.Player.resume();
-		}
 	};
+
 	eventjs.add(window, "load", function(event) {
 		var link = document.createElement("link");
 		link.href = "//fonts.googleapis.com/css?family=Oswald";
@@ -422,7 +417,6 @@
 				MIDI.loader.setValue(progress * 100);
 			},
 			onsuccess: function() {
-				/// this sets up the MIDI.Player and gets things going...
 				player = MIDI.Player;
 				player.timeWarp = 1; // speed the song is played back
 				player.loadFile(song[songid++ % song.length], player.start);
@@ -430,10 +424,6 @@
 		});
 	});
 
-	/*var midiFileParser = require('midi-file-parser');
-	var file = require('fs').readFileSync('filename.mid', 'binary');
-	var midi = midiFileParser(file);*/
-	// Begin loading indication.
 	var player;
 	// MIDI files from Disklavier World
 	var songid = 0;

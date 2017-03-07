@@ -73,14 +73,6 @@ var keyboard = (function() {
     }
   };
 
-  module.keyDownTriggered = function(event) {
-
-  }
-
-  module.keyUpTriggered = function(event) {
-
-  }
-
   var charsToKeyCodes = function(mapping) {
     // map letters
     var offset = 'A'.charCodeAt(0);

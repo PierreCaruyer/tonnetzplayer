@@ -1,35 +1,25 @@
 var MIDIFileHandler = (function() {
-	"use strict";
+	'use strict';
 
-	var module = {};
-	module.song = [];
-
-	var MIDIFileParser,
-			fileSync;
-
-	var filename,
-			usr_mode;
-
-	module.init = function() {
-		define(['midi-file-parser', 'fs'], function(midiFileParser, fs) {
-			MIDIFileParser = midiFileParser;
-			fileSync = fs;
-		});
-	};
-
-	module.data = function(path) {
-		return MIDIData(path);
-	}
-
-	var MIDIData = function(MIDIFile) {
-		var file = fileSync.readFileSync(MIDIFile, 'binary');
-		var data = MIDIFileParser(file);
-		return data;
-	};
+	var module = {},
+	 		midi   = MIDI.Player;
 
 	$('#file').on('change', function(){
-		filename = this.files[0].name;
-		module.song = MIDIData(filename);
+
+		try {
+			require(['fs'], function(fs){
+				fs.readFileSync(this.files[0].name, 'binary');
+			});
+			var reader = new FileReader();
+			var file = reader.readAsBinaryString(this.files[0]);
+			console.log(this.files[0]);
+			midi.loadFile(file, midi.start, function(){console.log('loading progress')},
+																			function(){console.log('loading error')});
+		} catch (e) {
+			console.log(e);
+		} finally {
+
+		}
 	});
 
 	module.createMIDIFile = function(filename) {

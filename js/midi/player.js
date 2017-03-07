@@ -125,6 +125,7 @@ midi.loadMidiFile = function(onsuccess, onprogress, onerror) {
 
 midi.loadFile = function(file, onsuccess, onprogress, onerror) {
 	midi.stop();
+  console.log(typeof(file));
 	if (file.indexOf('base64,') !== -1) {
 		var data = window.atob(file.split(',')[1]);
 		midi.currentData = data;

@@ -13,7 +13,6 @@ $(function(){
   tonnetz.init();
   midi.init();
   keyboard.init('piano');
-  MIDIFileHandler.init();
 
   $('#tonnetz').mousewheel(function(event) {
     tonnetz.setDensity(tonnetz.density - event.deltaY);

@@ -289,6 +289,7 @@ var tonnetz = (function() {
 
       // Fill faces
       for (var i=0; i<toneGrid[tone].length; i++) {
+        if(i === 0)
         setTranslate(ctx, toneGrid[tone][i].x, toneGrid[tone][i].y);
 
         var minorOn = false, majorOn = false;
@@ -498,14 +499,6 @@ var tonnetz = (function() {
 
     this.draw(true);
   };
-
-  module.userMode = function() {
-    return USER_MODE;
-  }
-
-  module.changeUserMode = function(newUserMode) {
-    USER_MODE = newUserMode;
-  }
 
   return module;
 })();

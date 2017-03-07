@@ -7,12 +7,7 @@ var MIDIFileHandler = (function() {
 	$('#file').on('change', function(){
 
 		try {
-			require(['fs'], function(fs){
-				fs.readFileSync(this.files[0].name, 'binary');
-			});
-			var reader = new FileReader();
-			var file = reader.readAsBinaryString(this.files[0]);
-			console.log(this.files[0]);
+			var file = fs.readFileSync(this.files[0].name, 'base46')
 			midi.loadFile(file, midi.start, function(){console.log('loading progress')},
 																			function(){console.log('loading error')});
 		} catch (e) {

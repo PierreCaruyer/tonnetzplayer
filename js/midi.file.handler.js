@@ -1,37 +1,46 @@
+if (typeof MIDI === 'undefined') MIDI = {};
+if (typeof MIDI.Player === 'undefined') MIDI.Player = {};
+
 var MIDIFileHandler = (function() {
 	'use strict';
 
 	var module = {},
 	 		midi   = MIDI.Player;
+			module.song = {};
+			module.tracks = {};
+			module.notes = {};
+			module.channel = 1;
 
-	$('#file').on('change', function(){
-
-		try {
-			var file = fs.readFileSync(this.files[0].name, 'base46')
-			midi.loadFile(file, midi.start, function(){console.log('loading progress')},
-																			function(){console.log('loading error')});
-		} catch (e) {
-			console.log(e);
-		} finally {
-
-		}
-	});
-
-	module.createMIDIFile = function(filename) {
-		var fileHolder = fopen(filename, 3);
-
-		if(fileHolder === -1)
-			return false;
-
-		while(event.key != 16)
-			recordNote(event, fileHolder);
-
-		return true;
+	module.playMIDIFile = function(file) {
+		midi.stop();
+		getMidiData(file);
 	};
 
-	var recordNote = function(event, fileStream) {
+	var playNote = function(event) {
+		MIDI.noteOn(module.channel, event.midi, event.velocity, 0);
+		tonnetz.noteOn(module.channel, event.midi);
+	};
 
-	}
+	var getMidiData = function(file) {
+		if (!(window.File && window.FileReader && window.FileList && window.Blob)) {
+				console.log("Reading files not supported by this browser");
+		} else {
+			//read the file
+			var reader = new FileReader();
+			reader.onload = function(e){
+				module.song = MidiConvert.parse(e.target.result);
+				module.tracks = module.song.tracks
+				module.channel = module.tracks[1].channelNumber;
+				module.notes = module.tracks[1].notes;
+				console.log(module.notes);
+				playNote(module.notes[2]);
+				var stringParts = JSON.stringify(module.song, undefined, 2);
+				console.log(stringParts);
+				//console.log(data.tracks);
+			};
+			reader.readAsBinaryString(file);
+		}
+	};
 
 	return module;
 })();

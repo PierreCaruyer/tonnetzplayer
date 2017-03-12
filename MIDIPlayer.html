@@ -33,6 +33,8 @@
 	<link href="css/bootstrap.min.css" rel="stylesheet">
 	<link href="css/font-awesome.min.css" rel="stylesheet">
 	<link href="css/style.css" rel="stylesheet">
+	<script type="text/javascript" src="https://tonejs.github.io/MidiConvert/build/MidiConvert.js"></script>
+	<script type="text/javascript" src="https://tonejs.github.io/Logo/build/Logo.js"></script>
 </head>
 <body>
 
@@ -359,7 +361,7 @@
 		<input type="image" src="./images/stop.png" align="absmiddle" value="stop" onclick="pausePlayStop(true)">
 		<input type="image" src="./images/backward.png" align="absmiddle" value="stop" onclick="player.getNextSong(-1);">
 		<input type="image" src="./images/forward.png" align="absmiddle" value="stop" onclick="player.getNextSong(+1);">
-		<input type="file" id="file">
+		<input type="file" id="file" accept="audio/mid">
 		<select id="mode-select">
 			<option value="play">Play</option>
 			<option value="record">Record</option>
@@ -381,9 +383,9 @@
     <script type="text/javascript" src="color-schemes/default.js"></script>
     <script type="text/javascript" src="color-schemes/greenonblack.js"></script>
     <script type="text/javascript" src="color-schemes/apollo.js"></script>
-		<script type="text/javascript" src="js/require.js"></script>
-		<script type="text/javascript" src="js/midi.file.handler.js"></script>
-	<script type="text/javascript" src="import.js"></script>
+	<script type="text/javascript" src="js/require.js"></script>
+	<script type="text/javascript" src="js/midi.file.handler.js"></script>
+
 
     <script type="text/javascript" src="js/main.js"></script>
 

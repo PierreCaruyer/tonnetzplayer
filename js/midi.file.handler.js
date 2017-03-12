@@ -9,7 +9,7 @@ var MIDIFileHandler = (function() {
 			module.song = {};
 			module.tracks = {};
 			module.notes = {};
-			module.channel = 1;
+			module.channel = 0;
 
 	module.playMIDIFile = function(file) {
 		midi.stop();
@@ -17,7 +17,8 @@ var MIDIFileHandler = (function() {
 	};
 
 	var playNote = function(event) {
-		MIDI.noteOn(module.channel, event.midi, event.velocity, 0);
+		MIDI.noteOn(0, 60, event.velocity, event.duration);
+
 		tonnetz.noteOn(module.channel, event.midi);
 	};
 
@@ -29,8 +30,8 @@ var MIDIFileHandler = (function() {
 			var reader = new FileReader();
 			reader.onload = function(e){
 				module.song = MidiConvert.parse(e.target.result);
-				module.tracks = module.song.tracks
-				module.channel = module.tracks[1].channelNumber;
+				module.tracks = module.song.tracks;
+				//module.channel = module.tracks[1].channelNumber;
 				module.notes = module.tracks[1].notes;
 				console.log(module.notes);
 				playNote(module.notes[2]);

@@ -187,6 +187,9 @@ midi.getFileInstruments = function() {
 };
 
 // Playing the audio
+midi.schedule = function(channel, note, currentTime, offset, message, velocity, time) {
+  scheduleTracking(channel, note, currentTime, offset, message, velocity, time);
+};
 
 var eventQueue = []; // hold events to be triggered
 var queuedTime; //
@@ -206,8 +209,10 @@ var scheduleTracking = function(channel, note, currentTime, offset, message, vel
 		//
 		if (message === 128) {
 			delete noteRegistrar[note];
+      tonnetz.noteOff(channel, note);
 		} else {
 			noteRegistrar[note] = data;
+      tonnetz.noteOn(channel, note);
 		}
 		if (onMidiEvent) {
 			onMidiEvent(data);
@@ -215,8 +220,7 @@ var scheduleTracking = function(channel, note, currentTime, offset, message, vel
 		midi.currentTime = currentTime;
 		///
 		eventQueue.shift();
-    tonnetz.noteOn(channel, note);
-    tonnetz.noteOff(channel, note);
+
 		///
 		if (eventQueue.length < 1000) {
 			startAudio(queuedTime, true);

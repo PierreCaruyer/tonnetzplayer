@@ -5,21 +5,52 @@ var MIDIFileHandler = (function() {
 	'use strict';
 
 	var module = {},
-	 		midi   = MIDI.Player;
-			module.song = {};
-			module.tracks = {};
-			module.notes = {};
-			module.channel = 0;
+	 		midi   = MIDI.Player,
+			noteEvents = [];
+	module.song = {};
+	module.tracks = {};
+	module.notes = {};
+	module.channel = 0;
 
 	module.playMIDIFile = function(file) {
 		midi.stop();
 		getMidiData(file);
+		//midi.loadMidiFile(midi.start);
 	};
 
-	var playNote = function(event) {
-		MIDI.noteOn(0, 60, event.velocity, event.duration);
+/**
+* re-formatting notes to match the format required by player.js
+*/
+	var formatNotes = function(notes) {
+		var delay = 0,
+				nextNoteOffTime = 0,
+				note = {},
+				nextNote = {},
+				adapter = [],
+				offNotes = [];
 
-		tonnetz.noteOn(module.channel, event.midi);
+		for(var n = 0; n < notes.length - 1; n++) {
+			note = notes[n];
+			nextNote = notes[n+1];
+			note.subtype = 'noteOn';
+			adapter.push(note);
+			offNotes.push(getNextNoteOff(note));
+			while((offNotes[0] && offNotes[0].time) && offNotes[0].time < nextNote.time) {
+				adapter.push(offNotes[0]);
+				offNotes.shift();
+			}
+			//midi.schedule(module.channel, note.midi, 0, 0, 144, note.velocity, note.time);
+		}
+		return adapter;
+	};
+
+	var getNextNoteOff = function(note) {
+		return {
+			midi: note.midi,
+			subtype: 'noteOff',
+			velocity: 0,
+			time: note.time + note.duration,
+		};
 	};
 
 	var getMidiData = function(file) {
@@ -29,15 +60,15 @@ var MIDIFileHandler = (function() {
 			//read the file
 			var reader = new FileReader();
 			reader.onload = function(e){
+				var notes = [];
 				module.song = MidiConvert.parse(e.target.result);
 				module.tracks = module.song.tracks;
-				//module.channel = module.tracks[1].channelNumber;
-				module.notes = module.tracks[1].notes;
-				console.log(module.notes);
-				playNote(module.notes[2]);
+				notes = module.tracks[1].notes;
+				midi.data = module.notes;
+				midi.startDelay = module.tracks[1].startTime;
+				midi.data = module.notes = formatNotes(notes);
 				var stringParts = JSON.stringify(module.song, undefined, 2);
 				console.log(stringParts);
-				//console.log(data.tracks);
 			};
 			reader.readAsBinaryString(file);
 		}

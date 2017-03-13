@@ -31,7 +31,6 @@ $(function(){
 
   document.querySelector('#file').addEventListener('change', function(e){
 		try {
-			console.log(e.target.files[0]);
 			var files = e.target.files;
 			if(files.length > 0)
 				MIDIFileHandler.playMIDIFile(files[0]);

@@ -5,70 +5,59 @@ var MIDIFileHandler = (function() {
 	'use strict';
 
 	var module = {},
-	 		midi   = MIDI.Player,
-			noteEvents = [];
+	 		midi   = MIDI.Player;
 	module.song = {};
-	module.tracks = {};
-	module.notes = {};
+	module.tracks = [];
+	module.notes = [];
 	module.channel = 0;
 
 	module.playMIDIFile = function(file) {
 		midi.stop();
 		getMidiData(file);
-		//midi.loadMidiFile(midi.start);
 	};
 
-/**
-* re-formatting notes to match the format required by player.js
-*/
-	var formatNotes = function(notes) {
-		var delay = 0,
-				nextNoteOffTime = 0,
-				note = {},
-				nextNote = {},
-				adapter = [],
-				offNotes = [];
-
-		for(var n = 0; n < notes.length - 1; n++) {
-			note = notes[n];
-			nextNote = notes[n+1];
-			note.subtype = 'noteOn';
-			adapter.push(note);
-			offNotes.push(getNextNoteOff(note));
-			while((offNotes[0] && offNotes[0].time) && offNotes[0].time < nextNote.time) {
-				adapter.push(offNotes[0]);
-				offNotes.shift();
-			}
-			//midi.schedule(module.channel, note.midi, 0, 0, 144, note.velocity, note.time);
+	var reachNotesAt = function(time, notes) {
+		var notesAt = [], count = 0;
+		var noteData = {};
+		for(var note = 0; note < notes.length; note++) {
+			noteData = notes[note];
+			var fulltime = noteData.duration + noteData.time;
+			if((time > noteData.time) && (time < (noteData.duration + noteData.time)))
+				notesAt.push(noteData);
+			count++;
 		}
-		return adapter;
+		return {
+			firstNote: count,
+			notes: notesAt
+		};
 	};
 
-	var getNextNoteOff = function(note) {
-		return {
-			midi: note.midi,
-			subtype: 'noteOff',
-			velocity: 0,
-			time: note.time + note.duration,
-		};
+	//Time : seconds
+	module.whichNotesOn = function(time) {
+		var notes = reachNotesAt(time, module.notes);
+		console.log(JSON.stringify(notes, undefined, 2));
+		var i = 0, current = {};
+		tonnetz.init();
+		for(var note = 0; note < notes.notes.length; i++) {
+			current = notes.notes[note];
+			MIDI.noteOn(0, current.midi, current.velocity, current.time + current.duration);
+
+			tonnetz.noteOn(0, current.midi);
+		}
 	};
 
 	var getMidiData = function(file) {
 		if (!(window.File && window.FileReader && window.FileList && window.Blob)) {
 				console.log("Reading files not supported by this browser");
 		} else {
-			//read the file
 			var reader = new FileReader();
 			reader.onload = function(e){
-				var notes = [];
 				module.song = MidiConvert.parse(e.target.result);
 				module.tracks = module.song.tracks;
-				notes = module.tracks[1].notes;
-				midi.data = module.notes;
-				midi.startDelay = module.tracks[1].startTime;
-				midi.data = module.notes = formatNotes(notes);
-				var stringParts = JSON.stringify(module.song, undefined, 2);
-				console.log(stringParts);
+				module.notes = module.tracks[1].notes;
+				//var stringParts = JSON.stringify(module.song, undefined, 2);
+				//console.log(stringParts);
+				module.whichNotesOn(7.8);
 			};
 			reader.readAsBinaryString(file);
 		}

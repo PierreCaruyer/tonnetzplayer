@@ -186,11 +186,7 @@ midi.getFileInstruments = function() {
 	return ret;
 };
 
-// Playing the audio
-midi.schedule = function(channel, note, currentTime, offset, message, velocity, time) {
-  scheduleTracking(channel, note, currentTime, offset, message, velocity, time);
-};
-
+//Playing the audio
 var eventQueue = []; // hold events to be triggered
 var queuedTime; //
 var startTime = 0; // to measure time elapse

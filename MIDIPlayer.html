@@ -34,7 +34,7 @@
 	<link href="css/font-awesome.min.css" rel="stylesheet">
 	<link href="css/style.css" rel="stylesheet">
 	<script type="text/javascript" src="js/MidiConvert.js"></script>
-	<script type="text/javascript" src="js/Logo.js"></script>
+	<script type="text/javascript" src="js/Tone.js"></script>
 </head>
 <body>
 
@@ -422,7 +422,7 @@
 			onsuccess: function() {
 				player = MIDI.Player;
 				player.timeWarp = 1; // speed the song is played back
-				//player.loadFile(song[songid++ % song.length], player.start);
+				player.loadFile(song[songid++ % song.length]/*, player.start*/);
 			}
 		});
 	});

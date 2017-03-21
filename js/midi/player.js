@@ -210,9 +210,6 @@ var scheduleTracking = function(channel, note, currentTime, offset, message, vel
 			noteRegistrar[note] = data;
       tonnetz.noteOn(channel, note);
 		}
-		if (onMidiEvent) {
-			onMidiEvent(data);
-		}
 		midi.currentTime = currentTime;
 		///
 		eventQueue.shift();

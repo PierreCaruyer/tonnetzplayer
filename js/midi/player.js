@@ -19,6 +19,7 @@ midi.playing = false;
 midi.timeWarp = 1;
 midi.startDelay = 0;
 midi.BPM = 120;
+midi.backTrackTime = 500;
 
 midi.start =
 midi.resume = function(onsuccess) {
@@ -110,6 +111,7 @@ midi.loadMidiFile = function(onsuccess, onprogress, onerror) {
 	try {
 		midi.replayer = new Replayer(MidiFile(midi.currentData), midi.timeWarp, null, midi.BPM);
 		midi.data = midi.replayer.getData();
+    //console.log(JSON.stringify(midi.data, undefined, 2));
 		midi.endTime = getLength();
 		///
 		MIDI.loadPlugin({
@@ -119,12 +121,12 @@ midi.loadMidiFile = function(onsuccess, onprogress, onerror) {
 			onerror: onerror
 		});
 	} catch(event) {
+    console.log('error');
 		onerror && onerror(event);
 	}
 };
 
 midi.loadFile = function(file, onsuccess, onprogress, onerror) {
-	midi.stop();
 	if (file.indexOf('base64,') !== -1) {
 		var data = window.atob(file.split(',')[1]);
 		midi.currentData = data;
@@ -161,6 +163,7 @@ midi.getFileInstruments = function() {
 	var programs = {};
 	for (var n = 0; n < midi.data.length; n ++) {
 		var event = midi.data[n][0].event;
+
 		if (event.type !== 'channel') {
 			continue;
 		}
@@ -186,8 +189,45 @@ midi.getFileInstruments = function() {
 	return ret;
 };
 
+var playNotes = function(notes) {
+  MIDI.noteOn(channelId, event.noteNumber, event.velocity, delay);
+};
+
+var hideNotes = function() {
+  for(var n = 0; n < currentTone.length; n++){
+    tonnetz.noteOff(MIDI.channelscurrentTone[n]);
+  }
+};
+
+midi.backTrack = function() {
+  midi.backTrackTime = midi.currentTime - 500;
+  var replayedNotes = [];
+  replayedNotes.push(lastPlayedNote);
+  for(var n = 0; n < currentTone.length - 1; n++)
+    replayedNotes.push(currentTone[n]);
+  var currentNotes = fileHandler.whichNotesOn(midi.backTrackTime, fileHandler.notes);
+  var i = 0;
+  midi.pause(true);
+  /*var notes = [];
+  console.log(JSON.stringify(currentTone, undefined, 2));
+  console.log(JSON.stringify(notes, undefined, 2));
+  do{
+    notes = fileHandler.whichNotesOn(midi.backTrackTime, fileHandler.notes);
+    midi.backTrackTime = midi.backTrackTime - 200;
+    console.log(JSON.stringify(notes, undefined, 2));
+    i++;
+  }while(notes.length === 0 && i < 10);*/
+  console.log('Replayed notes');
+  console.log(JSON.stringify(replayedNotes, undefined, 2));
+  console.log('Last notes');
+  console.log(JSON.stringify(lastPlayedNote, undefined, 2));
+  fileHandler.notesReplayer(replayedNotes, true);
+};
+
 //Playing the audio
 var eventQueue = []; // hold events to be triggered
+var currentTone = [];
+var lastPlayedNote = {};
 var queuedTime; //
 var startTime = 0; // to measure time elapse
 var noteRegistrar = {}; // get event for requested note
@@ -206,14 +246,15 @@ var scheduleTracking = function(channel, note, currentTime, offset, message, vel
 		if (message === 128) {
 			delete noteRegistrar[note];
       tonnetz.noteOff(channel, note);
+      lastPlayedNote = currentTone.shift();
 		} else {
 			noteRegistrar[note] = data;
       tonnetz.noteOn(channel, note);
+      currentTone.push(data);
 		}
 		midi.currentTime = currentTime;
 		///
 		eventQueue.shift();
-
 		///
 		if (eventQueue.length < 1000) {
 			startAudio(queuedTime, true);

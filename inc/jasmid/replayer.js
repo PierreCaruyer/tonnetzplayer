@@ -12,7 +12,7 @@ function Replayer(midiFile, timeWarp, eventProcessor, bpm) {
 	var bpmOverride = bpm ? true : false;
 
 	var ticksPerBeat = midiFile.header.ticksPerBeat;
-	
+
 	for (var i = 0; i < midiFile.tracks.length; i++) {
 		trackStates[i] = {
 			'nextEventIndex': 0,
@@ -26,12 +26,12 @@ function Replayer(midiFile, timeWarp, eventProcessor, bpm) {
 
 	var nextEventInfo;
 	var samplesToNextEvent = 0;
-	
+
 	function getNextEvent() {
 		var ticksToNextEvent = null;
 		var nextEventTrack = null;
 		var nextEventIndex = null;
-		
+
 		for (var i = 0; i < trackStates.length; i++) {
 			if (
 				trackStates[i].ticksToNextEvent != null

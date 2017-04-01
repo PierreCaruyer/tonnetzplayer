@@ -12,9 +12,9 @@ function MidiFile(data) {
 			'data': stream.read(length)
 		};
 	}
-	
+
 	var lastEventTypeByte;
-	
+
 	function readEvent(stream) {
 		var event = {};
 		event.deltaTime = stream.readVarInt();
@@ -185,7 +185,7 @@ function MidiFile(data) {
 					return event;
 				default:
 					throw "Unrecognised MIDI event type: " + eventType
-					/* 
+					/*
 					console.log("Unrecognised MIDI event type: " + eventType);
 					stream.readInt8();
 					event.subtype = 'unknown';
@@ -194,7 +194,7 @@ function MidiFile(data) {
 			}
 		}
 	}
-	
+
 	stream = Stream(data);
 	var headerChunk = readChunk(stream);
 	if (headerChunk.id != 'MThd' || headerChunk.length != 6) {
@@ -204,19 +204,20 @@ function MidiFile(data) {
 	var formatType = headerStream.readInt16();
 	var trackCount = headerStream.readInt16();
 	var timeDivision = headerStream.readInt16();
-	
+
 	if (timeDivision & 0x8000) {
 		throw "Expressing time division in SMTPE frames is not supported yet"
 	} else {
 		ticksPerBeat = timeDivision;
 	}
-	
+
 	var header = {
 		'formatType': formatType,
 		'trackCount': trackCount,
 		'ticksPerBeat': ticksPerBeat
 	}
 	var tracks = [];
+
 	for (var i = 0; i < header.trackCount; i++) {
 		tracks[i] = [];
 		var trackChunk = readChunk(stream);
@@ -227,10 +228,8 @@ function MidiFile(data) {
 		while (!trackStream.eof()) {
 			var event = readEvent(trackStream);
 			tracks[i].push(event);
-			//console.log(event);
 		}
 	}
-	
 	return {
 		'header': header,
 		'tracks': tracks

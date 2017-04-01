@@ -36,7 +36,7 @@ var midi = (function() {
   };
 
   var onMIDIReject = function(err) {
-    showError('Failed to obtain access to MIDI.');
+    //showError('Failed to obtain access to MIDI.');
   };
 
   var onMIDIPortChange = function() {
@@ -45,7 +45,7 @@ var midi = (function() {
 
     if (id != currentId) {
       if (port != null) {
-        port.removeEventListener('midimessage', MIDIMessageEventListener); 
+        port.removeEventListener('midimessage', MIDIMessageEventListener);
         tonnetz.panic();
       }
 

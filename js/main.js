@@ -1,5 +1,8 @@
 var canvas, ctx, noteLabels, triadLabels;
 
+if (typeof MIDI === 'undefined') MIDI = {};
+if (typeof MIDI.Player === 'undefined') MIDI.Player = {};
+
 $(function(){
   canvas = document.getElementById("canvas");
   ctx = canvas.getContext("2d");
@@ -18,6 +21,11 @@ $(function(){
     tonnetz.setDensity(tonnetz.density - event.deltaY);
     return false;
   });
+
+  var backToTheFuture = function() {
+    MIDI.Player.backTrack();
+  };
+
   $(window).keypress(function(event) {
     if (somethingHasFocus()) return;
 
@@ -27,13 +35,17 @@ $(function(){
     } else if (c == '-') {
       tonnetz.setDensity(tonnetz.density + 2);
     }
+
+    if(event.which === 8) {// backspace pressed
+      backToTheFuture();
+    }
   });
 
   document.querySelector('#file').addEventListener('change', function(e){
 		try {
 			var files = e.target.files;
 			if(files.length > 0)
-				MIDIFileHandler.playMIDIFile(files[0]);
+			   fileHandler.playMIDIFile(files[0]);
 		} catch (e) {
 			console.log(e);
 		} finally {

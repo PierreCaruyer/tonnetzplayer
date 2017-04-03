@@ -26,6 +26,13 @@ $(function(){
     MIDI.Player.backTrack();
   };
 
+  var pausePlayStop = function() {
+		if (MIDI.Player.playing)
+			MIDI.Player.pause(true);
+		else
+			MIDI.Player.resume();
+	};
+
   $(window).keypress(function(event) {
     if (somethingHasFocus()) return;
 
@@ -38,6 +45,9 @@ $(function(){
 
     if(event.which === 8) {// backspace pressed
       backToTheFuture();
+    }
+    else if(event.which === 32) {//space pressed
+      pausePlayStop();
     }
   });
 

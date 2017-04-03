@@ -363,10 +363,6 @@
 		<input type="image" src="./images/backward.png" align="absmiddle" value="stop" onclick="player.getNextSong(-1);">
 		<input type="image" src="./images/forward.png" align="absmiddle" value="stop" onclick="player.getNextSong(+1);">
 		<input type="file" id="file" accept="audio/mid">
-		<select id="mode-select">
-			<option value="play">Play</option>
-			<option value="record">Record</option>
-		</select>
 	</div>
 
     <script type="text/javascript" src="js/jquery.min.js"></script>
@@ -422,7 +418,6 @@
 			onsuccess: function() {
 				player = MIDI.Player;
 				player.timeWarp = 1; // speed the song is played back
-				//player.loadFile(/*song[songid++ % song.length]*/'alan_jackson_dont_rock_the_jukebox.mid', player.start);
 			}
 		});
 	});

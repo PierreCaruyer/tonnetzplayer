@@ -27,6 +27,7 @@ midi.resume = function(onsuccess) {
     if (midi.currentTime < -1) {
     	midi.currentTime = -1;
     }
+    MIDI.Player.wipeTonnetz();
     startAudio(midi.currentTime, null, onsuccess);
 };
 
@@ -189,21 +190,29 @@ midi.getFileInstruments = function() {
 	return ret;
 };
 
-var hideCurrentTone = function() {
+var updateDisplay = function() {
+  for(var n = 0; n < currentTone.length; n++)
+    tonnetz.noteOn(currentTone[n].channel, currentTone[n].note);
+};
+
+midi.wipeTonnetz = function() {
   for(var n = 0; n < 17; n++)
     tonnetz.allNotesOff(n);
 };
 
 midi.backTrack = function() {
-  midi.backTrackTime = midi.currentTime - 500;
+  midi.backTrackTime = midi.backTrackTime - 125;
   var replayedNotes = [];
   replayedNotes.push(lastPlayedNote);
   for(var n = 0; n < currentTone.length - 1; n++)
     replayedNotes.push(currentTone[n]);
-  var currentNotes = fileHandler.whichNotesOn(midi.backTrackTime, fileHandler.notes);
+  var currentNotes = fileHandler.whichNotesOn(midi.backTrackTime);
   midi.pause(true);
-  hideCurrentTone();
-  fileHandler.notesReplayer(replayedNotes, true);
+  midi.wipeTonnetz();
+  console.log(JSON.stringify(currentNotes, undefined, 2));
+  //console.log(JSON.stringify(replayedNotes, undefined, 2));
+  //fileHandler.notesReplayer(replayedNotes, true);
+  fileHandler.notesReplayer(currentNotes, false);
 };
 
 //Playing the audio
@@ -228,15 +237,15 @@ var scheduleTracking = function(channel, note, currentTime, offset, message, vel
 		//
 		if (message === 128) {
 			delete noteRegistrar[note];
-      tonnetz.noteOff(channel, note);
       lastPlayedNote = currentTone.shift();
+      tonnetz.noteOff(lastPlayedNote.channel, lastPlayedNote.note);
       playedNotes.push(lastPlayedNote);
 		} else {
 			noteRegistrar[note] = data;
-      tonnetz.noteOn(channel, note);
       currentTone.push(data);
 		}
-		midi.currentTime = currentTime;
+    updateDisplay();
+		midi.backTrackTime = midi.currentTime = currentTime;
 		///
 		eventQueue.shift();
 		///

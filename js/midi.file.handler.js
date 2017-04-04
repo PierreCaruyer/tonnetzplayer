@@ -53,56 +53,43 @@ var fileHandler = (function() {
 	};
 
 	var rePlayNote = function(note, midi) {
-		var delayOn = 500, delayOff = 700;
+		var delayOn = 2.500, delayOff = 2.700;
 		if(midi) {
-			setTimeout(function(){
-				MIDI.noteOn(module.channel, note.note, note.velocity, delayOn);
-				tonnetz.noteOn(module.channel, note.note);
+				MIDI.noteOn(note.channel, note.note, note.velocity, delayOn);
+				tonnetz.noteOn(note.channel, note.note);
 			}, delayOn);
-			setTimeout(function(){
-				MIDI.noteOff(module.channel, note.note, note.velocity, delayOff);
-				tonnetz.noteOff(module.channel, note.note);
-			}, delayOff);
 		}
 		else {
-			setTimeout(function() {
 				MIDI.noteOn(module.channel, note.midi, note.velocity, delayOn);
 				tonnetz.noteOn(module.channel, note.midi);
-			}, delay * 1000);
-			setTimeout(function(){
-				var now = Date.now() - start;
-				MIDI.noteOff(module.channel, note.midi, note.velocity, delayOff);
-				tonnetz.noteOff(module.channel, note.midi);
-			}, delay * 1000);
 		}
 	};
 
 	module.notesReplayer = function(notes, midi) {
-		console.log(JSON.stringify(notes, undefined, 2));
 		for(var n = 0; n < notes.length; n++)
 			rePlayNote(notes[n], midi);
 	};
 
-	//Time : seconds
 	module.whichNotesOn = function(time) {
 		var notesAt = [];
-		console.log(time);
 		time = time / 1000;
-		for(var n = 0; n  < module.tracks.legnth; n++) {
+		console.log(time);
+		for(var n = 0; n < module.tracks.length; n++){
 			module.notes = module.tracks[n].notes;
 			for(var note = 0; note < module.notes.length; note++) {
 				var noteData = module.notes[note];
-				console.log('noteData ' + noteData);
-				console.log
-				if((time > noteData.time) && (time < (noteData.duration + noteData.time)))
+				if((time > noteData.time) && (time < (noteData.duration + noteData.time))) {
 					notesAt.push(noteData);
+				}
 			}
 		}
 		return notesAt;
 	};
 
 	module.requestDisplay = function(time) {
-		var notes = reachNotesAt(time);
+		var notes = whichNotesOn(time);
+		for(var n = 0; n < notes.length; n++)
+			tonnetz.noteOn(module.channel, notes[n].midi);
 	};
 
 	return module;

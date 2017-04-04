@@ -22,10 +22,6 @@ $(function(){
     return false;
   });
 
-  var backToTheFuture = function() {
-    MIDI.Player.backTrack();
-  };
-
   var pausePlayStop = function() {
 		if (MIDI.Player.playing)
 			MIDI.Player.pause(true);
@@ -43,12 +39,10 @@ $(function(){
       tonnetz.setDensity(tonnetz.density + 2);
     }
 
-    if(event.which === 8) {// backspace pressed
-      backToTheFuture();
-    }
-    else if(event.which === 32) {//space pressed
+    if(event.which === 8) // backspace pressed
+      MIDI.Player.backTrack();
+    else if(event.which === 32) //space pressed
       pausePlayStop();
-    }
   });
 
   document.querySelector('#file').addEventListener('change', function(e){

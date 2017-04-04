@@ -191,8 +191,9 @@ midi.getFileInstruments = function() {
 };
 
 var updateDisplay = function() {
-  for(var n = 0; n < currentTone.length; n++)
-    tonnetz.noteOn(currentTone[n].channel, currentTone[n].note);
+  /*for(var n = 0; n < currentTone.length; n++)
+    tonnetz.noteOn(currentTone[n].channel, currentTone[n].note);*/
+  fileHandler.requestDisplay(midi.currentTime);
 };
 
 midi.wipeTonnetz = function() {
@@ -202,15 +203,15 @@ midi.wipeTonnetz = function() {
 
 midi.backTrack = function() {
   midi.backTrackTime = midi.backTrackTime - 125;
-  var replayedNotes = [];
+  /*var replayedNotes = [];
   replayedNotes.push(lastPlayedNote);
   for(var n = 0; n < currentTone.length - 1; n++)
-    replayedNotes.push(currentTone[n]);
+    replayedNotes.push(currentTone[n]);*/
   var currentNotes = fileHandler.whichNotesOn(midi.backTrackTime);
   midi.pause(true);
   midi.wipeTonnetz();
-  console.log(JSON.stringify(currentNotes, undefined, 2));
   //console.log(JSON.stringify(replayedNotes, undefined, 2));
+  //console.log(JSON.stringify(currentNotes, undefined, 2));
   //fileHandler.notesReplayer(replayedNotes, true);
   fileHandler.notesReplayer(currentNotes, false);
 };

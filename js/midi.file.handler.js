@@ -57,7 +57,6 @@ var fileHandler = (function() {
 		if(midi) {
 				MIDI.noteOn(note.channel, note.note, note.velocity, delayOn);
 				tonnetz.noteOn(note.channel, note.note);
-			}, delayOn);
 		}
 		else {
 				MIDI.noteOn(module.channel, note.midi, note.velocity, delayOn);
@@ -87,7 +86,7 @@ var fileHandler = (function() {
 	};
 
 	module.requestDisplay = function(time) {
-		var notes = whichNotesOn(time);
+		var notes = module.whichNotesOn(time);
 		for(var n = 0; n < notes.length; n++)
 			tonnetz.noteOn(module.channel, notes[n].midi);
 	};

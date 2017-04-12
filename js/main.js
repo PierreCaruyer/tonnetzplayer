@@ -23,10 +23,15 @@ $(function(){
   });
 
   var pausePlayStop = function() {
-		if (MIDI.Player.playing)
+    var pausePlayButton = document.getElementById('pausePlayStop');
+		if (MIDI.Player.playing) {
+      pausePlayButton.src = "../images/play.png";
 			MIDI.Player.pause(true);
-		else
+    }
+		else {
+      pausePlayButton.src = "../images/pause.png";
 			MIDI.Player.resume();
+    }
 	};
 
   $(window).keypress(function(event) {
@@ -49,7 +54,7 @@ $(function(){
 		try {
 			var files = e.target.files;
 			if(files.length > 0)
-			   fileHandler.playMIDIFile(files[0]);
+			   MIDI.Player.loadFile(files[0].name, MIDI.Player.start);
 		} catch (e) {
 			console.log(e);
 		} finally {

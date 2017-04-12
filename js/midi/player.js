@@ -113,8 +113,9 @@ midi.loadMidiFile = function(onsuccess, onprogress, onerror) {
 	try {
 		midi.replayer = new Replayer(MidiFile(midi.currentData), midi.timeWarp, null, midi.BPM);
 		midi.data = midi.replayer.getData();
-    //console.log(JSON.stringify(midi.data, undefined, 2));
 		midi.endTime = getLength();
+    var pausePlayButton = document.getElementById('pausePlayStop');
+    pausePlayButton.src = "./images/pause.png";
 		///
 		MIDI.loadPlugin({
 // 			instruments: midi.getFileInstruments(),
@@ -191,6 +192,7 @@ midi.getFileInstruments = function() {
 };
 
 var updateDisplay = function() {
+  midi.wipeTonnetz();
   /*for(var n = 0; n < currentTone.length; n++)
     tonnetz.noteOn(currentTone[n].channel, currentTone[n].note);*/
   fileHandler.requestDisplay(midi.currentTime);
@@ -210,8 +212,6 @@ midi.backTrack = function() {
   var currentNotes = fileHandler.whichNotesOn(midi.backTrackTime);
   midi.pause(true);
   midi.wipeTonnetz();
-  //console.log(JSON.stringify(replayedNotes, undefined, 2));
-  //console.log(JSON.stringify(currentNotes, undefined, 2));
   //fileHandler.notesReplayer(replayedNotes, true);
   fileHandler.notesReplayer(currentNotes, false);
 };
@@ -235,17 +235,18 @@ var scheduleTracking = function(channel, note, currentTime, offset, message, vel
 			message: message,
 			velocity: velocity
 		};
-		//
+		///
 		if (message === 128) {
 			delete noteRegistrar[note];
       lastPlayedNote = currentTone.shift();
-      tonnetz.noteOff(lastPlayedNote.channel, lastPlayedNote.note);
-      playedNotes.push(lastPlayedNote);
+      tonnetz.noteOff(channel, note);
+      //playedNotes.push(lastPlayedNote);
 		} else {
 			noteRegistrar[note] = data;
-      currentTone.push(data);
+      tonnetz.noteOn(channel, note);
+      //currentTone.push(data);
 		}
-    updateDisplay();
+    //updateDisplay();
 		midi.backTrackTime = midi.currentTime = currentTime;
 		///
 		eventQueue.shift();
@@ -273,6 +274,7 @@ var getLength = function() {
 	var totalTime = 0.5;
 	for (var n = 0; n < length; n++) {
 		totalTime += data[n][1];
+    console.log(JSON.stringify(data[n][9], undefined, 2));
 	}
 	return totalTime;
 };

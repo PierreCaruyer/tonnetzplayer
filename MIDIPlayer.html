@@ -36,6 +36,25 @@
 	<script type="text/javascript" src="js/MidiConvert.js"></script>
 	<script type="text/javascript" src="js/Tone.js"></script>
 	<script type='text/javascript' src='http://www.midijs.net/lib/midi.js'></script>
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="js/jquery.mousewheel.min.js"></script>
+	<script type="text/javascript" src="js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="js/jsoneditor.min.js"></script>
+
+	<script type="text/javascript" src="js/storage.js"></script>
+	<script type="text/javascript" src="js/audio.js"></script>
+	<script type="text/javascript" src="js/tonnetz.js"></script>
+	<script type="text/javascript" src="js/midi.js"></script>
+	<script type="text/javascript" src="js/keyboard.js"></script>
+
+	<script type="text/javascript" src="js/colorscheme.js"></script>
+	<script type="text/javascript" src="color-schemes/default.js"></script>
+	<script type="text/javascript" src="color-schemes/greenonblack.js"></script>
+	<script type="text/javascript" src="color-schemes/apollo.js"></script>
+	<script type="text/javascript" src="js/require.js"></script>
+	<script type="text/javascript" src="js/midi.file.handler.js"></script>
+
+	<script type="text/javascript" src="js/main.js"></script>
 </head>
 <body>
 
@@ -231,7 +250,7 @@
                   <label for="ghost-duration" class="control-label col-xs-5 col-sm-4 col-md-3">'Ghost' tone duration</label>
                   <div class="col-xs-6 col-sm-4 col-md-3">
                     <div class="input-group">
-                      <input type="number" class="form-control" id="ghost-duration" min="0" step="50" value="500">
+                      <input type="number" class="form-control" id="ghost-duration" min="0" step="50" value="0">
                       <div class="input-group-addon">ms</div>
                     </div>
                   </div>
@@ -358,44 +377,29 @@
     </div>
 
 	<div style="margin: 0 auto; width: 160px; float: right;" id="pause">
-		<input type="image" src="./images/pause.png" align="absmiddle" value="pause" onclick="pausePlayStop()" id="pausePlayStop">
+		<input type="image" src="./images/play.png" align="absmiddle" value="pause" onclick="pausePlayStop()" id="pausePlayStop">
 		<input type="image" src="./images/stop.png" align="absmiddle" value="stop" onclick="pausePlayStop(true)">
 		<input type="image" src="./images/backward.png" align="absmiddle" value="stop" onclick="player.getNextSong(-1);">
 		<input type="image" src="./images/forward.png" align="absmiddle" value="stop" onclick="player.getNextSong(+1);">
 		<input type="file" id="file" accept="audio/mid">
 	</div>
 
-    <script type="text/javascript" src="js/jquery.min.js"></script>
-    <script type="text/javascript" src="js/jquery.mousewheel.min.js"></script>
-    <script type="text/javascript" src="js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="js/jsoneditor.min.js"></script>
-
-    <script type="text/javascript" src="js/storage.js"></script>
-    <script type="text/javascript" src="js/audio.js"></script>
-    <script type="text/javascript" src="js/tonnetz.js"></script>
-    <script type="text/javascript" src="js/midi.js"></script>
-    <script type="text/javascript" src="js/keyboard.js"></script>
-
-    <script type="text/javascript" src="js/colorscheme.js"></script>
-    <script type="text/javascript" src="color-schemes/default.js"></script>
-    <script type="text/javascript" src="color-schemes/greenonblack.js"></script>
-    <script type="text/javascript" src="color-schemes/apollo.js"></script>
-		<script type="text/javascript" src="js/require.js"></script>
-		<script type="text/javascript" src="js/midi.file.handler.js"></script>
-
-    <script type="text/javascript" src="js/main.js"></script>
-
 <script type="text/javascript">
 	if (typeof (console) === "undefined") var console = {
 		log: function() {}
 	};
 	var pausePlayStop = function(stop) {
-		if (stop)
+		var pausePlayButton = document.getElementById('pausePlayStop');
+		if (stop) {
+			pausePlayButton.src = "./images/play.png";
 			MIDI.Player.stop();
-		else if (MIDI.Player.playing)
+		} else if (MIDI.Player.playing) {
+			pausePlayButton.src = "./images/play.png";
 			MIDI.Player.pause(true);
-		else
+		} else {
+			pausePlayButton.src = "./images/pause.png";
 			MIDI.Player.resume();
+		}
 	};
 
 	eventjs.add(window, "load", function(event) {

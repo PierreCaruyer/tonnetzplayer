@@ -12,8 +12,8 @@ var fileHandler = (function() {
 	module.channel = 0;
 
 	module.playMIDIFile = function(file) {
-		midi.loadFile(file.name, midi.start);
-		if (!(window.File && window.FileReader && window.FileList && window.Blob)) {
+
+		/*if (!(window.File && window.FileReader && window.FileList && window.Blob)) {
 				console.log("Reading files not supported by this browser");
 		} else {
 			var reader = new FileReader();
@@ -23,7 +23,7 @@ var fileHandler = (function() {
 				//playTracks();
 			};
 			reader.readAsBinaryString(file);
-		}
+		}*/
 	};
 
 	var playTracks = function() {
@@ -47,7 +47,7 @@ var fileHandler = (function() {
 			var now = Date.now() - start;
 			delay = ((note.time + note.duration));
 			if(delayOn < delay)
-			//MIDI.noteOff(module.channel, note.midi, note.velocity, note.time + note.duration);
+			MIDI.noteOff(module.channel, note.midi, note.velocity, note.time + note.duration);
 			tonnetz.noteOff(module.channel, note.midi);
 		}, delay * 1000);
 	};
@@ -72,14 +72,12 @@ var fileHandler = (function() {
 	module.whichNotesOn = function(time) {
 		var notesAt = [];
 		time = time / 1000;
-		console.log(time);
 		for(var n = 0; n < module.tracks.length; n++){
 			module.notes = module.tracks[n].notes;
 			for(var note = 0; note < module.notes.length; note++) {
 				var noteData = module.notes[note];
-				if((time > noteData.time) && (time < (noteData.duration + noteData.time))) {
+				if((time > noteData.time) && (time < (noteData.duration + noteData.time)))
 					notesAt.push(noteData);
-				}
 			}
 		}
 		return notesAt;

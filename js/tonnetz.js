@@ -32,6 +32,7 @@ var tonnetz = (function() {
 
 
   module.init = function() {
+    module.ghostDuration = $('#ghost-duration').val();
     tones = $.map(Array(12), function(_, i) {
       return {
         'pitch': i,

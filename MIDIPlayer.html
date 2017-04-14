@@ -33,9 +33,11 @@
 	<link href="css/bootstrap.min.css" rel="stylesheet">
 	<link href="css/font-awesome.min.css" rel="stylesheet">
 	<link href="css/style.css" rel="stylesheet">
+	<!--
 	<script type="text/javascript" src="js/MidiConvert.js"></script>
 	<script type="text/javascript" src="js/Tone.js"></script>
 	<script type='text/javascript' src='http://www.midijs.net/lib/midi.js'></script>
+	-->
 	<script type="text/javascript" src="js/jquery.min.js"></script>
 	<script type="text/javascript" src="js/jquery.mousewheel.min.js"></script>
 	<script type="text/javascript" src="js/bootstrap.min.js"></script>
@@ -251,6 +253,15 @@
                   <div class="col-xs-6 col-sm-4 col-md-3">
                     <div class="input-group">
                       <input type="number" class="form-control" id="ghost-duration" min="0" step="50" value="0">
+                      <div class="input-group-addon">ms</div>
+                    </div>
+                  </div>
+                </div>
+								<div class="form-group">
+                  <label for="backtrack-step" class="control-label col-xs-5 col-sm-4 col-md-3">Time jump step</label>
+                  <div class="col-xs-6 col-sm-4 col-md-3">
+                    <div class="input-group">
+                      <input type="number" class="form-control" id="backtrack-step" min="125" step="125" value="125">
                       <div class="input-group-addon">ms</div>
                     </div>
                   </div>

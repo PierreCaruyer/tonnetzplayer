@@ -30,6 +30,7 @@ $(function(){
     }
 		else {
       pausePlayButton.src = "../images/pause.png";
+      tonnetz.wipe();
 			MIDI.Player.resume();
     }
 	};
@@ -44,10 +45,14 @@ $(function(){
       tonnetz.setDensity(tonnetz.density + 2);
     }
 
+    console.log(event.which);
+
     if(event.which === 8) // backspace pressed
       MIDI.Player.backTrack();
-    else if(event.which === 32) //space pressed
+    else if(event.which === 32) // space pressed
       pausePlayStop();
+    else if(event.which === 16) // enter pressed
+      MIDI.Player.lookAhead();
   });
 
   document.querySelector('#file').addEventListener('change', function(e){
@@ -91,6 +96,9 @@ $(function(){
   $('#enable-sustain').click(function() { tonnetz.toggleSustainEnabled(); });
   $('#show-note-names').click(function() { $(noteLabels).toggle(); });
   $('#show-triad-names').click(function() { $(triadLabels).toggle(); });
+  $('#backtrack-step').on('input change propertychange paste', function() {
+    MIDI.Player.setBackTrackTimeStep($(this).val());
+  });
   $('#ghost-duration').on('input change propertychange paste', function() {
     if(!tonnetz.setGhostDuration($(this).val())) {
       $(this).closest('.form-group').addClass('has-error');

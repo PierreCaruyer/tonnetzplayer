@@ -60,8 +60,6 @@ var tonnetz = (function() {
 
 
   module.noteOn = function(c, pitch) {
-    //MIDI.noteOn(c, pitch, velocity, delay);
-
     if (!(pitch in channels[c].pitches)) {
       var i = pitch%12;
       tones[i].state = STATE_ON;
@@ -81,8 +79,6 @@ var tonnetz = (function() {
   };
 
   module.noteOff = function(c, pitch) {
-    //MIDI.noteOff(c, pitch, delay);
-
     if (pitch in channels[c].pitches) {
       var i = pitch%12;
       delete channels[c].pitches[pitch];
@@ -148,7 +144,7 @@ var tonnetz = (function() {
     this.draw();
   };
 
-  module.panic = function() {
+  module.wipe = module.panic = function() {
     for (var i=0; i<CHANNELS; i++) {
       this.sustainOff(i);
       this.allNotesOff(i);

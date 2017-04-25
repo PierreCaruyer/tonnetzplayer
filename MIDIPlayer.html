@@ -252,7 +252,7 @@
                   <label for="ghost-duration" class="control-label col-xs-5 col-sm-4 col-md-3">'Ghost' tone duration</label>
                   <div class="col-xs-6 col-sm-4 col-md-3">
                     <div class="input-group">
-                      <input type="number" class="form-control" id="ghost-duration" min="0" step="50" value="0">
+                      <input type="number" class="form-control" id="ghost-duration" min="1" step="1" value="1">
                       <div class="input-group-addon">ms</div>
                     </div>
                   </div>
@@ -262,7 +262,16 @@
                   <div class="col-xs-6 col-sm-4 col-md-3">
                     <div class="input-group">
                       <input type="number" class="form-control" id="backtrack-step" min="125" step="125" value="125">
-                      <div class="input-group-addon">ms</div>
+                      <div class="input-group-addon">Number of tone to skip</div>
+                    </div>
+                  </div>
+                </div>
+								<div class="form-group">
+                  <label for="bpm-picker" class="control-label col-xs-5 col-sm-4 col-md-3">BPM</label>
+                  <div class="col-xs-6 col-sm-4 col-md-3">
+                    <div class="input-group">
+                      <input type="number" class="form-control" id="bpm-picker" min="1" step="5" value="120">
+                      <div class="input-group-addon">Beats per minute</div>
                     </div>
                   </div>
                 </div>

@@ -45,8 +45,6 @@ $(function(){
       tonnetz.setDensity(tonnetz.density + 2);
     }
 
-    console.log(event.which);
-
     if(event.which === 8) // backspace pressed
       MIDI.Player.backTrack();
     else if(event.which === 32) // space pressed

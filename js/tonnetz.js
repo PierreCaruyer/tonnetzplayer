@@ -59,7 +59,7 @@ var tonnetz = (function() {
   };
 
 
-  module.noteOn = function(c, pitch) {
+  module.noteOn = function(c, pitch, jump) {
     if (!(pitch in channels[c].pitches)) {
       var i = pitch%12;
       tones[i].state = STATE_ON;
@@ -78,7 +78,7 @@ var tonnetz = (function() {
     this.draw();
   };
 
-  module.noteOff = function(c, pitch) {
+  module.noteOff = function(c, pitch, jump) {
     if (pitch in channels[c].pitches) {
       var i = pitch%12;
       delete channels[c].pitches[pitch];

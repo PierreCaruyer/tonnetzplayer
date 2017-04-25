@@ -19,8 +19,10 @@ midi.playing = false;
 midi.timeWarp = 1;
 midi.startDelay = 0;
 midi.BPM = 120;
-midi.backTrackTime = 500;
-midi.timeJumpStep = 125;
+midi.timeJumpStep = 1;
+midi.onsuccess = null;
+midi.onprogress = null;
+midi.onfailure = null;
 var CHANNELS = 17;
 
 midi.start =
@@ -29,6 +31,8 @@ midi.resume = function(onsuccess) {
     	midi.currentTime = -1;
     }
     tonnetz.wipe();
+    midi.data = midi.replayer.getData();
+    setUpTimeline(midi.data, 0, getContext(), midi.data.length);
     startAudio(midi.currentTime, null, onsuccess);
 };
 
@@ -56,6 +60,17 @@ midi.clearAnimation = function() {
 	if (midi.animationFrameId)  {
 		cancelAnimationFrame(midi.animationFrameId);
 	}
+};
+
+midi.onbpmchange = function() {
+  midi.stop();
+  resetTimeline();
+  midi.loadFile(midi.file, midi.onsuccess, midi.onprogress, midi.onfailure);
+};
+
+var resetTimeline = function() {
+  emptyList(timeline);
+  currentPos = 0;
 };
 
 midi.setBackTrackTimeStep = function(step) {
@@ -141,6 +156,10 @@ midi.loadMidiFile = function(onsuccess, onprogress, onerror) {
 };
 
 midi.loadFile = function(file, onsuccess, onprogress, onerror) {
+  midi.file = file;
+  midi.onsuccess = onsuccess;
+  midi.onprogress = onprogress;
+  midi.onfailure = onerror;
 	if (file.indexOf('base64,') !== -1) {
 		var data = window.atob(file.split(',')[1]);
 		midi.currentData = data;
@@ -203,15 +222,15 @@ midi.getFileInstruments = function() {
 };
 
 var updateDisplay = function(timeJump) {
-  var event = timeLine[currentPos];
-  if(jump) {
+  var event = timeline[currentPos];
+  //console.log('time line display ' + currentPos);
+  //console.log(JSON.stringify(timeline[currentPos], undefined, 2));
+  if(timeJump)
     tonnetz.wipe();
-    
-  }
   for(var index = 0; index < event.offTone.length; index++)
-    tonnetz.noteOff(event.offTone[index].channel, event.offTone[index].noteNumber);
+    tonnetz.noteOff(event.offTone[index].channel, event.offTone[index].noteNumber, timeJump);
   for(var n = 0; n < event.tone.length; n++)
-    tonnetz.noteOn(event.tone[n].channel, event.tone[n].noteNumber);
+    tonnetz.noteOn(event.tone[n].channel, event.tone[n].noteNumber, timeJump);
 };
 
 midi.backTrack = function() {
@@ -228,10 +247,15 @@ midi.lookAhead = function() {
  updateDisplay(true);
 };
 
+var updateDisplayWhilePlaying = function() {
+  currentPos++;
+  updateDisplay();
+};
+
 //Playing the audio
 var eventQueue = []; // hold events to be triggered
-var timeLine = []; //timeline registering a tone each time noteOff or a noteOn event happens
-var deletedOnes = [];
+var timeline = []; //timeline registering a tone each time noteOff or a noteOn event happens
+var array = [];
 var currentPos = 0;
 var queuedTime; //
 var startTime = 0; // to measure time elapse
@@ -248,15 +272,12 @@ var scheduleTracking = function(channel, note, currentTime, offset, message, vel
 			velocity: velocity
 		};
 		///
-		if (message === 128) {
+		if (message === 128)
 			delete noteRegistrar[note];
-      //tonnetz.noteOff(channel, note);
-		} else {
+		else
 			noteRegistrar[note] = data;
-      //tonnetz.noteOn(channel, note);
-		}
-    currentPos++;
-    updateDisplay();
+
+    updateDisplayWhilePlaying();
 		midi.backTrackTime = midi.currentTime = currentTime;
 		///
 		eventQueue.shift();
@@ -296,64 +317,54 @@ var getNow = function() {
 	}
 };
 
-var deleteNotesFromTone = function(tone, notes) {
-  var newTone = [];
-  var n = 0, c = 0;
-  var detected = false;
-  while(n < tone.length) {
-    while(c < notes.length && detected === false) {
-      if(tone[n].noteNumber !== notes[c].noteNumber)
-        detected = true;
-      c++;
-    }
-    if(detected === false)
-      newTone.push(tone[n]);
-    detected = false;
-    c = 0;
-    n++;
-  }
-  return newTone;
-};
-
-var setUpTimeline = function() {
-  var currentTone = [];
-  var time = 0;
-  var timeNote = {};
-  var timeOffset = 0;
-  var deletedNotes = [];
-
-  for(var c = 0; c < length; c++) {
-    timeNote = midi.data[c];
-    time += timeNote[1];
-    if(timeNote[0].subtype === 'noteOn') {
-      timeOffset = 1;
-      currentTone.push(timeNote[0]);
-      timeNote = midi.data[c + timeOffset];
-      while(timeNote[1] === 0 && timeNote[0].subtype === 'noteOn') { // while a "noteOn row" is on
-        currentTone.push(timeNote[0]);
-        timeOffset++;
-        timeNote = data[c + timeOffset];
-      }
-    }
-    else if(timeNote[0].subtype === 'noteOff') {
-      while(deletedNotes.length > 0)
-        deletedNotes.shift();
-      deletedNotes.push(timeNote[0]);
-      timeOffset = 1;
-      timeNote = midi.data[n + timeOffset];
-      while(((n + timeOffset) < length) && (timeNote[1] === 0) && (timeNote[0].subtype === 'noteOff')) { //while we're on a "noteOff row"
-        deletedNotes.push(timeNote[0]);
-        timeOffset++;
-        timeNote = midi.data[c + timeOffset];
-      }
-      currentTone = deleteNotesFromTone(currentTone, deletedNotes);
-    }
-    timeLine.push({
-      tone: currentTone,
-      offTone: deletedNotes,
-      time: time
+var setUpTimeline = function(data, offset, ctx, length) {
+  if (!midi.replayer) return;
+	var currentTime = midi.restart;
+  var foffset = currentTime - midi.currentTime;
+	var note;
+	queuedTime = 0.5;
+  for(var n = 0; n < length; n++) {
+    timeline.push({
+      tone: [],
+      offTone: [],
+      index: 0,
+      time: 0
     });
   }
+	for (var n = 0; n < length; n++) {
+		var obj = data[n];
+		if ((queuedTime += obj[1]) <= currentTime) {
+			offset = queuedTime;
+			continue;
+		}
+
+		var event = obj[0].event;
+		if (event.type !== 'channel') {
+			continue;
+		}
+		var channelId = event.channel;
+		if (event.subtype === 'noteOn') {
+      note = event.noteNumber;
+      array.push({
+    		channel: channelId,
+    		note: note,
+    	});
+      for(var a = 0; a < array.length; a++)
+        timeline[n].tone.push(array[a]);
+      timeline[n].time = queuedTime + midi.startDelay;
+    } else if(event.subtype === 'noteOff') {
+      var offNotes = array.shift();
+      for(var a = 0; a < array.length; a++)
+        timeline[n].tone.push(array[a]);
+      timeline[n].offTone.push(offNotes);
+      timeline[n].time = queuedTime + midi.startDelay;
+		}
+	}
+};
+
+var emptyList = function(list) {
+  while(list.length)
+    list.shift();
 };
 
 var startAudio = function(currentTime, fromCache, onsuccess) {
@@ -391,8 +402,6 @@ var startAudio = function(currentTime, fromCache, onsuccess) {
 	///
 	startTime = ctx.currentTime;
 
-  setUpTimeline();
-
 	///
 	for (var n = 0; n < length && messages < 100; n++) {
 		var obj = data[n];
@@ -407,10 +416,9 @@ var startAudio = function(currentTime, fromCache, onsuccess) {
 		if (event.type !== 'channel') {
 			continue;
 		}
-
 		///
 		var channelId = event.channel;
-		//var channel = MIDI.channels[channelId];
+		var channel = MIDI.channels[channelId];
 		var delay = ctx.currentTime + ((currentTime + foffset + midi.startDelay) / 1000);
 		var queueTime = queuedTime - offset + midi.startDelay;
 		switch (event.subtype) {

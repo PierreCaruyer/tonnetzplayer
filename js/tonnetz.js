@@ -17,7 +17,7 @@ var tonnetz = (function() {
       u;  // unit distance (distance between neighbors)
 
   module.density = 22;
-  module.ghostDuration = 200;
+  module.ghostDuration = 500;
   module.layout = LAYOUT_RIEMANN;
 
   var toneGrid = [];
@@ -32,7 +32,6 @@ var tonnetz = (function() {
 
 
   module.init = function() {
-    module.ghostDuration = $('#ghost-duration').val();
     tones = $.map(Array(12), function(_, i) {
       return {
         'pitch': i,
@@ -59,7 +58,10 @@ var tonnetz = (function() {
   };
 
 
-  module.noteOn = function(c, pitch, jump) {
+  module.noteOn = function(c, pitch, skip) {
+    if(skip)
+      MIDI.Player.noteOn(c, pitch);
+
     if (!(pitch in channels[c].pitches)) {
       var i = pitch%12;
       tones[i].state = STATE_ON;
@@ -78,7 +80,10 @@ var tonnetz = (function() {
     this.draw();
   };
 
-  module.noteOff = function(c, pitch, jump) {
+  module.noteOff = function(c, pitch, skip) {
+    if(skip)
+      MIDI.Player.noteOff(c, pitch);
+
     if (pitch in channels[c].pitches) {
       var i = pitch%12;
       delete channels[c].pitches[pitch];
@@ -151,6 +156,7 @@ var tonnetz = (function() {
     }
   };
 
+
   module.toggleSustainEnabled = function() {
     sustainEnabled = !sustainEnabled;
   };
@@ -182,6 +188,7 @@ var tonnetz = (function() {
     this.rebuild();
   };
 
+
   var releaseTone = function(tone) {
     tone.release = new Date();
     if (module.ghostDuration > 0) {
@@ -192,9 +199,6 @@ var tonnetz = (function() {
     }
   };
 
-  module.toneReleased = function(tone) {
-    releaseTone(tone);
-  }
 
   var ghostsInterval = null;
 
@@ -285,7 +289,6 @@ var tonnetz = (function() {
 
       // Fill faces
       for (var i=0; i<toneGrid[tone].length; i++) {
-        if(i === 0)
         setTranslate(ctx, toneGrid[tone][i].x, toneGrid[tone][i].y);
 
         var minorOn = false, majorOn = false;

@@ -46,11 +46,11 @@ $(function(){
     }
 
     if(event.which === 8) // backspace pressed
-      MIDI.Player.backTrack();
+      MIDI.Player.stepBack();
     else if(event.which === 32) // space pressed
       pausePlayStop();
     else if(event.which === 16) // enter pressed
-      MIDI.Player.lookAhead();
+      MIDI.Player.stepForward();
   });
 
   document.querySelector('#file').addEventListener('change', function(e){
@@ -95,7 +95,7 @@ $(function(){
   $('#show-note-names').click(function() { $(noteLabels).toggle(); });
   $('#show-triad-names').click(function() { $(triadLabels).toggle(); });
   $('#backtrack-step').on('input change propertychange paste', function() {
-    MIDI.Player.setBackTrackTimeStep($(this).val());
+    MIDI.Player.setBackTrackStep($(this).val());
   });
   $('#ghost-duration').on('input change propertychange paste', function() {
     if(!tonnetz.setGhostDuration($(this).val())) {

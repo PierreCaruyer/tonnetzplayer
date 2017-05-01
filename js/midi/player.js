@@ -231,12 +231,17 @@ midi.getFileInstruments = function() {
 
 var updateDisplay = function(skip) {
   var event = timeline[currentPos];
-  if(skip)
+  if(skip) {
     tonnetz.wipe();
-  for(var index = 0; index < event.offTone.length; index++)
-    tonnetz.noteOff(event.offTone[index].channel, event.offTone[index].note, skip);
-  for(var n = 0; n < event.tone.length; n++)
-    tonnetz.noteOn(event.tone[n].channel, event.tone[n].note, skip);
+    for(var n = 0; n < event.tone.length; n++)
+      tonnetz.noteOn(event.tone[n].channel, event.tone[n].note, true);
+  }
+  else {
+    for(var index = 0; index < event.offTone.length; index++)
+      tonnetz.noteOff(event.offTone[index].channel, event.offTone[index].note);
+    for(var n = 0; n < event.tone.length; n++)
+      tonnetz.noteOn(event.tone[n].channel, event.tone[n].note);
+  }
 };
 
 midi.stepBack = function() {
@@ -283,8 +288,6 @@ var scheduleTracking = function(channel, note, currentTime, offset, message, vel
 		else
 			noteRegistrar[note] = data;
 
-    if(currentPos === 17)
-      console.log(JSON.stringify(timeline[17], undefined, 2));
     updateDisplayWhilePlaying();
 		midi.currentTime = currentTime;
 		///

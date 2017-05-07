@@ -25,11 +25,11 @@ $(function(){
   var pausePlayStop = function() {
     var pausePlayButton = document.getElementById('pausePlayStop');
 		if (MIDI.Player.playing) {
-      pausePlayButton.src = "../images/play.png";
+      pausePlayButton.src = "./images/play.png";
 			MIDI.Player.pause(true);
     }
 		else {
-      pausePlayButton.src = "../images/pause.png";
+      pausePlayButton.src = "./images/pause.png";
       tonnetz.wipe();
 			MIDI.Player.resume();
     }
@@ -96,6 +96,9 @@ $(function(){
   $('#show-triad-names').click(function() { $(triadLabels).toggle(); });
   $('#backtrack-step').on('input change propertychange paste', function() {
     MIDI.Player.setBackTrackStep($(this).val());
+  });
+  $('#bpm-picker').on('input change propertychange paste', function() {
+    MIDI.Player.onbpmchange($(this).val());
   });
   $('#ghost-duration').on('input change propertychange paste', function() {
     if(!tonnetz.setGhostDuration($(this).val())) {

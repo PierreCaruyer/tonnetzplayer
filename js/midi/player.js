@@ -23,6 +23,7 @@ midi.jumpStep = 1;
 midi.onsuccess = null;
 midi.onprogress = null;
 midi.onfailure = null;
+midi.file = '';
 var CHANNELS = 17;
 
 midi.start =
@@ -32,13 +33,13 @@ midi.resume = function(onsuccess) {
     }
     tonnetz.wipe();
     midi.data = midi.replayer.getData();
+    resetTimeline();
     setUpTimeline(midi.data, 0, getContext(), midi.data.length);
     startAudio(midi.currentTime, null, onsuccess);
 };
 
 midi.pause = function() {
 	var tmp = midi.restart;
-  var tmpPos = currentPos;
 	stopAudio();
 	midi.restart = tmp;
 };
@@ -63,14 +64,18 @@ midi.clearAnimation = function() {
 	}
 };
 
-midi.onbpmchange = function(step) {
-  var typeofstep = typeof(step);
-  if(typeofstep === 'string')
-    midi.jumpStep = parseInt(step);
-  else if(typeofstep === 'number')
-    midi.jumpStep = step;
-  else
-    midi.BPM = 120;
+var parsePositiveInt = function(str) {
+  var value = -1;
+  if(typeof str === 'string')
+    value = parseInt(str);
+  else if(typeof str === 'number')
+    value = str;
+  return value;
+};
+
+midi.onbpmchange = function(arg) {
+  var beatsPerMin = parsePositiveInt(arg);
+  midi.BPM = (beatsPerMin === -1)? 120 : beatsPerMin;
   midi.stop();
   resetTimeline();
   midi.loadFile(midi.file, midi.onsuccess, midi.onprogress, midi.onfailure);
@@ -82,13 +87,8 @@ var resetTimeline = function() {
 };
 
 midi.setBackTrackStep = function(step) {
-  var typeofstep = typeof(step);
-  if(typeofstep === 'string')
-    midi.jumpStep = parseInt(step);
-  else if(typeofstep === 'number')
-    midi.jumpStep = step;
-  else
-    midi.jumpStep = 125;
+  var integerStep = parsePositiveInt(step);
+  midi.jumpStep = (integerStep === -1)? 1 : integerStep;
 };
 
 midi.setAnimation = function(callback) {
@@ -226,6 +226,7 @@ midi.getFileInstruments = function() {
 	for (var key in instruments) {
 		ret.push(key);
 	}
+  console.log(JSON.stringify(ret, undefined, 2));
 	return ret;
 };
 
@@ -237,23 +238,25 @@ var updateDisplay = function(skip) {
       tonnetz.noteOn(event.tone[n].channel, event.tone[n].note, true);
   }
   else {
-    for(var index = 0; index < event.offTone.length; index++)
-      tonnetz.noteOff(event.offTone[index].channel, event.offTone[index].note);
     for(var n = 0; n < event.tone.length; n++)
       tonnetz.noteOn(event.tone[n].channel, event.tone[n].note);
+    for(var index = 0; index < event.offTone.length; index++)
+      tonnetz.noteOff(event.offTone[index].channel, event.offTone[index].note);
   }
 };
 
 midi.stepBack = function() {
   midi.pause(true);
   currentPos -= midi.jumpStep;
-  updateDisplay(true);
+  if(currentPos >= 0 && currentPos < timeline.length)
+    updateDisplay(true);
 };
 
 midi.stepForward = function() {
  midi.pause(true);
  currentPos += midi.jumpStep;
- updateDisplay(true);
+ if(currentPos >= 0 && currentPos < timeline.length)
+  updateDisplay(true);
 };
 
 var updateDisplayWhilePlaying = function() {
@@ -287,7 +290,7 @@ var scheduleTracking = function(channel, note, currentTime, offset, message, vel
 			delete noteRegistrar[note];
 		else
 			noteRegistrar[note] = data;
-
+    console.log(JSON.stringify(timeline, ))
     updateDisplayWhilePlaying();
 		midi.currentTime = currentTime;
 		///
@@ -414,7 +417,6 @@ var startAudio = function(currentTime, fromCache, onsuccess) {
 	}
 	///
 	startTime = ctx.currentTime;
-
 	///
 	for (var n = 0; n < length && messages < 100; n++) {
 		var obj = data[n];
@@ -430,6 +432,7 @@ var startAudio = function(currentTime, fromCache, onsuccess) {
 			continue;
 		}
 		///
+    event.channel = 0;
 		var channelId = event.channel;
 		var channel = MIDI.channels[channelId];
 		var delay = ctx.currentTime + ((currentTime + foffset + midi.startDelay) / 1000);

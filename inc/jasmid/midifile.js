@@ -6,10 +6,11 @@ function MidiFile(data) {
 	function readChunk(stream) {
 		var id = stream.read(4);
 		var length = stream.readInt32();
+		var streamData = stream.read(length);
 		return {
 			'id': id,
 			'length': length,
-			'data': stream.read(length)
+			'data': streamData
 		};
 	}
 
@@ -185,12 +186,6 @@ function MidiFile(data) {
 					return event;
 				default:
 					throw "Unrecognised MIDI event type: " + eventType
-					/*
-					console.log("Unrecognised MIDI event type: " + eventType);
-					stream.readInt8();
-					event.subtype = 'unknown';
-					return event;
-					*/
 			}
 		}
 	}

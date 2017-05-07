@@ -86,6 +86,7 @@ function Replayer(midiFile, timeWarp, eventProcessor, bpm) {
 			///
 			var time = (secondsToGenerate * 1000 * timeWarp) || 0;
 			temporal.push([ midiEvent, time]);
+			//console.log(JSON.stringify(midiEvent, undefined, 2));
 			midiEvent = getNextEvent();
 		};
 		///

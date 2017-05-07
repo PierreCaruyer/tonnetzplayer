@@ -226,7 +226,6 @@ midi.getFileInstruments = function() {
 	for (var key in instruments) {
 		ret.push(key);
 	}
-  console.log(JSON.stringify(ret, undefined, 2));
 	return ret;
 };
 
@@ -290,7 +289,6 @@ var scheduleTracking = function(channel, note, currentTime, offset, message, vel
 			delete noteRegistrar[note];
 		else
 			noteRegistrar[note] = data;
-    console.log(JSON.stringify(timeline, ))
     updateDisplayWhilePlaying();
 		midi.currentTime = currentTime;
 		///

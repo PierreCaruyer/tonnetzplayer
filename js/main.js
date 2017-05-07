@@ -49,7 +49,7 @@ $(function(){
       MIDI.Player.stepBack();
     else if(event.which === 32) // space pressed
       pausePlayStop();
-    else if(event.which === 16) // enter pressed
+    else if(event.which === 13)// enter pressed
       MIDI.Player.stepForward();
   });
 

@@ -222,6 +222,7 @@ function MidiFile(data) {
 		var trackStream = Stream(trackChunk.data);
 		while (!trackStream.eof()) {
 			var event = readEvent(trackStream);
+			event.channel = 0;
 			tracks[i].push(event);
 		}
 	}

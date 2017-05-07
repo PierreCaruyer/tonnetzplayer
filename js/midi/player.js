@@ -229,18 +229,20 @@ midi.getFileInstruments = function() {
 	return ret;
 };
 
+var currentTone = [];
+
 var updateDisplay = function(skip) {
-  var event = timeline[currentPos];
+  currentTone = timeline[currentPos];
   if(skip) {
     tonnetz.wipe();
-    for(var n = 0; n < event.tone.length; n++)
-      tonnetz.noteOn(event.tone[n].channel, event.tone[n].note, true);
+    for(var n = 0; n < currentTone.tone.length; n++)
+      tonnetz.noteOn(currentTone.tone[n].channel, currentTone.tone[n].note, true);
   }
   else {
-    for(var n = 0; n < event.tone.length; n++)
-      tonnetz.noteOn(event.tone[n].channel, event.tone[n].note);
-    for(var index = 0; index < event.offTone.length; index++)
-      tonnetz.noteOff(event.offTone[index].channel, event.offTone[index].note);
+    for(var n = 0; n < currentTone.tone.length; n++)
+      tonnetz.noteOn(currentTone.tone[n].channel, currentTone.tone[n].note);
+    for(var index = 0; index < currentTone.offTone.length; index++)
+      tonnetz.noteOff(currentTone.offTone[index].channel, currentTone.offTone[index].note);
   }
 };
 
@@ -289,6 +291,7 @@ var scheduleTracking = function(channel, note, currentTime, offset, message, vel
 			delete noteRegistrar[note];
 		else
 			noteRegistrar[note] = data;
+      
     updateDisplayWhilePlaying();
 		midi.currentTime = currentTime;
 		///
@@ -299,6 +302,8 @@ var scheduleTracking = function(channel, note, currentTime, offset, message, vel
 		} else if (midi.currentTime === queuedTime && queuedTime < midi.endTime) { // grab next sequence
       startAudio(queuedTime, true);
 		}
+    else
+      eventQueue.shift();
 	}, currentTime - offset);
 };
 
@@ -416,7 +421,7 @@ var startAudio = function(currentTime, fromCache, onsuccess) {
 	///
 	startTime = ctx.currentTime;
 	///
-	for (var n = 0; n < length && messages < 100; n++) {
+	for (var n = 0; n < length; n++) {
 		var obj = data[n];
 		if ((queuedTime += obj[1]) <= currentTime) {
 			offset = queuedTime;
@@ -430,7 +435,6 @@ var startAudio = function(currentTime, fromCache, onsuccess) {
 			continue;
 		}
 		///
-    event.channel = 0;
 		var channelId = event.channel;
 		var channel = MIDI.channels[channelId];
 		var delay = ctx.currentTime + ((currentTime + foffset + midi.startDelay) / 1000);

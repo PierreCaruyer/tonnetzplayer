@@ -33,11 +33,7 @@
 	<link href="css/bootstrap.min.css" rel="stylesheet">
 	<link href="css/font-awesome.min.css" rel="stylesheet">
 	<link href="css/style.css" rel="stylesheet">
-	<!--
-	<script type="text/javascript" src="js/MidiConvert.js"></script>
-	<script type="text/javascript" src="js/Tone.js"></script>
-	<script type='text/javascript' src='http://www.midijs.net/lib/midi.js'></script>
-	-->
+
 	<script type="text/javascript" src="js/jquery.min.js"></script>
 	<script type="text/javascript" src="js/jquery.mousewheel.min.js"></script>
 	<script type="text/javascript" src="js/bootstrap.min.js"></script>
@@ -101,6 +97,21 @@
               <a href="#" data-toggle="tab" role="tab" id="dummy-tab"></a>
             </li>
           </ul>
+
+					<input style="top: 15px" type="image" src="./images/play.png" align="absmiddle" value="pause" onclick="pausePlayStop()" id="pausePlayStop">
+					<input type="image" src="./images/stop.png" align="absmiddle" value="stop" onclick="pausePlayStop(true)">
+
+					<div class="player" style="height: 42px; float:right">
+							<div style="width: 160px;">
+							</div>
+							<div class="time-controls" style="top: 5px;">
+								<span id="time1" class="time">0:00</span>
+								<span id="capsule">
+									<span id="cursor"></span>
+								</span>
+								<span id="time2" class="time" style="text-align: left;">-0:00</span>
+							</div>
+					</div>
         </div><!-- /.navbar-collapse -->
       </nav>
 
@@ -356,15 +367,10 @@
     <div id="tonnetz">
       <div id="note-labels" class="labels"></div>
       <div id="triad-labels" class="labels"></div>
-      <canvas id="canvas">
-      </canvas>
+      <canvas id="canvas"></canvas>
     </div>
 
-	<div style="margin: 0 auto; width: 160px; float: right;" id="pause">
-		<input type="image" src="./images/play.png" align="absmiddle" value="pause" onclick="pausePlayStop()" id="pausePlayStop">
-		<input type="image" src="./images/stop.png" align="absmiddle" value="stop" onclick="pausePlayStop(true)">
-		<input type="image" src="./images/backward.png" align="absmiddle" value="stop" onclick="player.getNextSong(-1);">
-		<input type="image" src="./images/forward.png" align="absmiddle" value="stop" onclick="player.getNextSong(+1);">
+	<div style="margin: 0 auto; width: 300px; float: right;" id="pause">
 		<input type="file" id="file" accept="audio/mid">
 	</div>
 
@@ -406,9 +412,45 @@
 			onsuccess: function() {
 				player = MIDI.Player;
 				player.timeWarp = 1; // speed the song is played back
+				MIDIPlayerPercentage(player);
 			}
 		});
 	});
+
+	var MIDIPlayerPercentage = function(player) {
+		var time1 = document.getElementById("time1");
+		var time2 = document.getElementById("time2");
+		var capsule = document.getElementById("capsule");
+		var timeCursor = document.getElementById("cursor");
+		//
+		eventjs.add(capsule, "drag", function(event, self) {
+			eventjs.cancel(event);
+			player.currentTime = (self.x) / 420 * player.endTime;
+			if (player.currentTime < 0) player.currentTime = 0;
+			if (player.currentTime > player.endTime) player.currentTime = player.endTime;
+			if (self.state === "down") {
+				player.pause(true);
+			} else if (self.state === "up") {
+				player.resume();
+			}
+		});
+		//
+		function timeFormatting(n) {
+			var minutes = n / 60 >> 0;
+			var seconds = String(n - (minutes * 60) >> 0);
+			if (seconds.length == 1) seconds = "0" + seconds;
+			return minutes + ":" + seconds;
+		};
+		player.setAnimation(function(data, element) {
+			var percent = data.now / data.end;
+			var now = data.now >> 0; // where we are now
+			var end = data.end >> 0; // end of song
+			// display the information to the user
+			timeCursor.style.width = (percent * 100) + "%";
+			time1.innerHTML = timeFormatting(now);
+			time2.innerHTML = "-" + timeFormatting(end - now);
+		});
+	};
 
 	var player;
 </script>

@@ -25,6 +25,7 @@ midi.onprogress = null;
 midi.onfailure = null;
 midi.file = '';
 var CHANNELS = 17;
+midi.socket = null;
 
 midi.start =
 midi.resume = function(onsuccess) {
@@ -141,8 +142,6 @@ midi.setAnimation = function(callback) {
 	requestAnimationFrame(frame);
 };
 
-// helpers
-
 midi.loadMidiFile = function(onsuccess, onprogress, onerror) {
 	try {
 		midi.replayer = new Replayer(MidiFile(midi.currentData), midi.timeWarp, null, midi.BPM);
@@ -163,7 +162,8 @@ midi.loadMidiFile = function(onsuccess, onprogress, onerror) {
 	}
 };
 
-midi.loadFile = function(file, onsuccess, onprogress, onerror) {
+midi.loadFile = function(file, onsuccess, onprogress, onerror, socket) {
+  midi.socket = socket;
   midi.file = file;
   midi.onsuccess = onsuccess;
   midi.onprogress = onprogress;
@@ -198,38 +198,6 @@ midi.loadFile = function(file, onsuccess, onprogress, onerror) {
 		fetch.send();
 	}
 };
-
-midi.getFileInstruments = function() {
-	var instruments = {};
-	var programs = {};
-	for (var n = 0; n < midi.data.length; n ++) {
-		var event = midi.data[n][0].event;
-		if (event.type !== 'channel') {
-			continue;
-		}
-		var channel = event.channel;
-		switch(event.subtype) {
-			case 'controller':
-//				console.log(event.channel, MIDI.defineControl[event.controllerType], event.value);
-				break;
-			case 'programChange':
-				programs[channel] = event.programNumber;
-				break;
-			case 'noteOn':
-				var program = programs[channel];
-				var gm = MIDI.GM.byId[isFinite(program) ? program : channel];
-				instruments[gm.id] = true;
-				break;
-		}
-	}
-	var ret = [];
-	for (var key in instruments) {
-		ret.push(key);
-	}
-	return ret;
-};
-
-var currentTone = [];
 
 var updateDisplay = function(skip) {
   currentTone = timeline[currentPos];
@@ -269,8 +237,9 @@ var updateDisplayWhilePlaying = function() {
 //Playing the audio
 var eventQueue = []; // hold events to be triggered
 var timeline = []; //timeline registering a tone each time noteOff or a noteOn event happens
-var array = [];
 var currentTone = [];
+var currentTone = [];
+var array = [];
 var currentPos = 0;
 var queuedTime; //
 var startTime = 0; // to measure time elapse
@@ -291,7 +260,8 @@ var scheduleTracking = function(channel, note, currentTime, offset, message, vel
 			delete noteRegistrar[note];
 		else
 			noteRegistrar[note] = data;
-      
+
+    console.log(JSON.stringify(timeline[currentPos], undefined, 2));
     updateDisplayWhilePlaying();
 		midi.currentTime = currentTime;
 		///
@@ -379,6 +349,10 @@ var setUpTimeline = function(data, offset, ctx, length) {
       timeline[n].time = queuedTime + midi.startDelay;
 		}
 	}
+
+  while(timeline[0].tone.length === 0 && timeline[0].offTone.length === 0) {
+    timeline.shift();
+  }
 };
 
 var emptyList = function(list) {
@@ -400,41 +374,36 @@ var startAudio = function(currentTime, fromCache, onsuccess) {
 		midi.data = midi.replayer.getData();
 		midi.endTime = getLength();
 	}
-	///
+
 	var note;
 	var offset = 0;
 	var messages = 0;
 	var data = midi.data;
 	var ctx = getContext();
 	var length = data.length;
-	//
+
 	queuedTime = 0.5;
-	///
+
 	var interval = eventQueue[0] && eventQueue[0].interval || 0;
 	var foffset = currentTime - midi.currentTime;
-	///
+
 	if (MIDI.api !== 'webaudio') { // set currentTime on ctx
 		var now = getNow();
 		__now = __now || now;
 		ctx.currentTime = (now - __now) / 1000;
 	}
-	///
 	startTime = ctx.currentTime;
-	///
 	for (var n = 0; n < length; n++) {
 		var obj = data[n];
 		if ((queuedTime += obj[1]) <= currentTime) {
 			offset = queuedTime;
 			continue;
 		}
-		///
 		currentTime = queuedTime - offset;
-		///
 		var event = obj[0].event;
 		if (event.type !== 'channel') {
 			continue;
 		}
-		///
 		var channelId = event.channel;
 		var channel = MIDI.channels[channelId];
 		var delay = ctx.currentTime + ((currentTime + foffset + midi.startDelay) / 1000);

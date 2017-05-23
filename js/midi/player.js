@@ -261,8 +261,7 @@ var scheduleTracking = function(channel, note, currentTime, offset, message, vel
 		else
 			noteRegistrar[note] = data;
 
-    console.log(currentPos);
-    if(currentPos === 86)
+    if(currentPos === 0)
       console.log(JSON.stringify(timeline[currentPos], undefined, 2));
     updateDisplayWhilePlaying();
 		midi.currentTime = currentTime;

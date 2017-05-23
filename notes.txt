@@ -1,0 +1,19 @@
+-intro équipe
+-intro tonnetz
+-expliquer Hexachord
+-motivations du choix du sujet
+-Expliquer les enjeux du projet :
+	-
+
+-Expliquer comment le player met à jour l'affichage
+-Expliquer les possibilités maintenant que ces objectifs ont été remplis
+
+
+-Réduction à l'octave : 
+	-octave : intervalle musicale qui sépare deux notes dont l'une a le double de la fréquence de l'autre
+	-schéma sous forme de cercle
+	- note du piano -> réduction à l'octave -> représentation tonnetz
+
+-Expliquer la segmentation : du début à la fin d'un segment on entend les notes de ce segment : permet de faire le pont entre la musique 
+
+-Faire un schéma style mvc 

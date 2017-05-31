@@ -162,7 +162,7 @@ midi.loadMidiFile = function(onsuccess, onprogress, onerror) {
 	}
 };
 
-midi.loadFile = function(file, onsuccess, onprogress, onerror, socket) {
+midi.loadFile = function(file, onsuccess, onprogress, onerror) {
   midi.socket = socket;
   midi.file = file;
   midi.onsuccess = onsuccess;
@@ -186,7 +186,6 @@ midi.loadFile = function(file, onsuccess, onprogress, onerror, socket) {
 					for (var z = 0; z < mx; z++) {
 						ff[z] = scc(t.charCodeAt(z) & 255);
 					}
-					///
 					var data = ff.join('');
 					midi.currentData = data;
 					midi.loadMidiFile(onsuccess, onprogress, onerror);
@@ -197,14 +196,17 @@ midi.loadFile = function(file, onsuccess, onprogress, onerror, socket) {
 		};
 		fetch.send();
 	}
+  return midi.data;
 };
 
 var updateDisplay = function(skip) {
   currentTone = timeline[currentPos];
   if(skip) {
     tonnetz.wipe();
-    for(var n = 0; n < currentTone.tone.length; n++)
-      tonnetz.noteOn(currentTone.tone[n].channel, currentTone.tone[n].note, true);
+    for(var n = 0; n < currentTone.tone.length; n++) {
+      MIDI.noteOn(currentTone.tone[n].channel, currentTone.tone[n].note, 500, 0);
+      tonnetz.noteOn(currentTone.tone[n].channel, currentTone.tone[n].note);
+    }
   }
   else {
     for(var n = 0; n < currentTone.tone.length; n++)
@@ -229,9 +231,9 @@ midi.stepForward = function() {
 };
 
 var updateDisplayWhilePlaying = function() {
-  currentPos++;
   if(currentPos >= 0 && currentPos < timeline.length)
     updateDisplay();
+  currentPos++;
 };
 
 //Playing the audio
@@ -261,8 +263,6 @@ var scheduleTracking = function(channel, note, currentTime, offset, message, vel
 		else
 			noteRegistrar[note] = data;
 
-    if(currentPos === 0)
-      console.log(JSON.stringify(timeline[currentPos], undefined, 2));
     updateDisplayWhilePlaying();
 		midi.currentTime = currentTime;
 		///
@@ -273,8 +273,6 @@ var scheduleTracking = function(channel, note, currentTime, offset, message, vel
 		} else if (midi.currentTime === queuedTime && queuedTime < midi.endTime) { // grab next sequence
       startAudio(queuedTime, true);
 		}
-    else
-      eventQueue.shift();
 	}, currentTime - offset);
 };
 
@@ -346,6 +344,8 @@ var setUpTimeline = function(data, offset, ctx, length) {
         array[a].subtype = 'noteOn';
         timeline[n].tone.push(array[a]);
       }
+      if(offNotes !== undefined)
+        offNotes.subtype = 'noteOff';
       timeline[n].offTone.push(offNotes);
       timeline[n].time = queuedTime + midi.startDelay;
 		}

@@ -59,13 +59,6 @@ var tonnetz = (function() {
 
 
   module.noteOn = function(c, pitch, skip) {
-    if(skip) {
-      MIDI.noteOn(0, pitch, 0);
-      setTimeout(function(note){
-        MIDI.noteOff(0, note, 0);
-      }(pitch), 500);
-    }
-
     if (!(pitch in channels[c].pitches)) {
       var i = pitch%12;
       tones[i].state = STATE_ON;
@@ -85,7 +78,6 @@ var tonnetz = (function() {
   };
 
   module.noteOff = function(c, pitch, skip) {
-
     if (pitch in channels[c].pitches) {
       var i = pitch%12;
       delete channels[c].pitches[pitch];

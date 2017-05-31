@@ -1,2 +1,5 @@
 rendu.odt
 *.mid
+node_modules/
+public/
+

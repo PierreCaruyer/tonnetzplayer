@@ -6,11 +6,10 @@ function MidiFile(data) {
 	function readChunk(stream) {
 		var id = stream.read(4);
 		var length = stream.readInt32();
-		var streamData = stream.read(length);
 		return {
 			'id': id,
 			'length': length,
-			'data': streamData
+			'data': stream.read(length)
 		};
 	}
 
@@ -186,12 +185,19 @@ function MidiFile(data) {
 					return event;
 				default:
 					throw "Unrecognised MIDI event type: " + eventType
+					/*
+					console.log("Unrecognised MIDI event type: " + eventType);
+					stream.readInt8();
+					event.subtype = 'unknown';
+					return event;
+					*/
 			}
 		}
 	}
 
 	stream = Stream(data);
 	var headerChunk = readChunk(stream);
+	console.log(JSON.stringify(headerChunk, undefined, 2));
 	if (headerChunk.id != 'MThd' || headerChunk.length != 6) {
 		throw "Bad .mid file - header not found";
 	}
@@ -222,7 +228,6 @@ function MidiFile(data) {
 		var trackStream = Stream(trackChunk.data);
 		while (!trackStream.eof()) {
 			var event = readEvent(trackStream);
-			event.channel = 0;
 			tracks[i].push(event);
 		}
 	}

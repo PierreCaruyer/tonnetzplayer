@@ -23,9 +23,7 @@ midi.jumpStep = 1;
 midi.onsuccess = null;
 midi.onprogress = null;
 midi.onfailure = null;
-midi.file = '';
 var CHANNELS = 17;
-midi.socket = null;
 
 midi.start =
 midi.resume = function(onsuccess) {
@@ -65,18 +63,14 @@ midi.clearAnimation = function() {
 	}
 };
 
-var parsePositiveInt = function(str) {
-  var value = -1;
-  if(typeof str === 'string')
-    value = parseInt(str);
-  else if(typeof str === 'number')
-    value = str;
-  return value;
-};
-
-midi.onbpmchange = function(arg) {
-  var beatsPerMin = parsePositiveInt(arg);
-  midi.BPM = (beatsPerMin === -1)? 120 : beatsPerMin;
+midi.onbpmchange = function(step) {
+  var typeofstep = typeof(step);
+  if(typeofstep === 'string')
+    midi.jumpStep = parseInt(step);
+  else if(typeofstep === 'number')
+    midi.jumpStep = step;
+  else
+    midi.BPM = 120;
   midi.stop();
   resetTimeline();
   midi.loadFile(midi.file, midi.onsuccess, midi.onprogress, midi.onfailure);
@@ -88,8 +82,13 @@ var resetTimeline = function() {
 };
 
 midi.setBackTrackStep = function(step) {
-  var integerStep = parsePositiveInt(step);
-  midi.jumpStep = (integerStep === -1)? 1 : integerStep;
+  var typeofstep = typeof(step);
+  if(typeofstep === 'string')
+    midi.jumpStep = parseInt(step);
+  else if(typeofstep === 'number')
+    midi.jumpStep = step;
+  else
+    midi.jumpStep = 125;
 };
 
 midi.setAnimation = function(callback) {
@@ -157,13 +156,16 @@ midi.loadMidiFile = function(onsuccess, onprogress, onerror) {
 			onerror: onerror
 		});
 	} catch(event) {
-    console.log('error');
+    console.log(event);
 		onerror && onerror(event);
 	}
 };
 
 midi.loadFile = function(file, onsuccess, onprogress, onerror) {
-  midi.socket = socket;
+  load(file, onsuccess, onprogress, onerror);
+};
+
+var load = function(file, onsuccess, onprogress, onerror) {
   midi.file = file;
   midi.onsuccess = onsuccess;
   midi.onprogress = onprogress;
@@ -186,6 +188,7 @@ midi.loadFile = function(file, onsuccess, onprogress, onerror) {
 					for (var z = 0; z < mx; z++) {
 						ff[z] = scc(t.charCodeAt(z) & 255);
 					}
+					///
 					var data = ff.join('');
 					midi.currentData = data;
 					midi.loadMidiFile(onsuccess, onprogress, onerror);
@@ -200,19 +203,17 @@ midi.loadFile = function(file, onsuccess, onprogress, onerror) {
 };
 
 var updateDisplay = function(skip) {
-  currentTone = timeline[currentPos];
+  var event = timeline[currentPos];
   if(skip) {
     tonnetz.wipe();
-    for(var n = 0; n < currentTone.tone.length; n++) {
-      MIDI.noteOn(currentTone.tone[n].channel, currentTone.tone[n].note, 500, 0);
-      tonnetz.noteOn(currentTone.tone[n].channel, currentTone.tone[n].note);
-    }
+    for(var n = 0; n < event.tone.length; n++)
+      tonnetz.noteOn(event.tone[n].channel, event.tone[n].note);
   }
   else {
-    for(var n = 0; n < currentTone.tone.length; n++)
-      tonnetz.noteOn(currentTone.tone[n].channel, currentTone.tone[n].note);
-    for(var index = 0; index < currentTone.offTone.length; index++)
-      tonnetz.noteOff(currentTone.offTone[index].channel, currentTone.offTone[index].note);
+    for(var n = 0; n < event.tone.length; n++)
+      tonnetz.noteOn(event.tone[n].channel, event.tone[n].note);
+    for(var index = 0; index < event.offTone.length; index++)
+      tonnetz.noteOff(event.offTone[index].channel, event.offTone[index].note);
   }
 };
 
@@ -239,9 +240,8 @@ var updateDisplayWhilePlaying = function() {
 //Playing the audio
 var eventQueue = []; // hold events to be triggered
 var timeline = []; //timeline registering a tone each time noteOff or a noteOn event happens
-var currentTone = [];
-var currentTone = [];
 var array = [];
+var currentTone = [];
 var currentPos = 0;
 var queuedTime; //
 var startTime = 0; // to measure time elapse
@@ -257,7 +257,6 @@ var scheduleTracking = function(channel, note, currentTime, offset, message, vel
 			message: message,
 			velocity: velocity
 		};
-		///
 		if (message === 128)
 			delete noteRegistrar[note];
 		else
@@ -322,11 +321,9 @@ var setUpTimeline = function(data, offset, ctx, length) {
 			offset = queuedTime;
 			continue;
 		}
-
 		var event = obj[0].event;
 		if (event.type !== 'channel')
 			continue;
-
 		var channelId = event.channel;
 		if (event.subtype === 'noteOn') {
       note = event.noteNumber - (midi.MIDIOffset || 0);
@@ -341,19 +338,13 @@ var setUpTimeline = function(data, offset, ctx, length) {
     } else if(event.subtype === 'noteOff') {
       var offNotes = array.shift();
       for(var a = 0; a < array.length; a++) {
-        array[a].subtype = 'noteOn';
+        array[a].subtype = 'noteOff';
         timeline[n].tone.push(array[a]);
       }
-      if(offNotes !== undefined)
-        offNotes.subtype = 'noteOff';
       timeline[n].offTone.push(offNotes);
       timeline[n].time = queuedTime + midi.startDelay;
 		}
 	}
-
-  while(timeline[0].tone.length === 0 && timeline[0].offTone.length === 0) {
-    timeline.shift();
-  }
 };
 
 var emptyList = function(list) {
@@ -375,36 +366,43 @@ var startAudio = function(currentTime, fromCache, onsuccess) {
 		midi.data = midi.replayer.getData();
 		midi.endTime = getLength();
 	}
-
+	///
 	var note;
 	var offset = 0;
 	var messages = 0;
 	var data = midi.data;
 	var ctx = getContext();
 	var length = data.length;
-
+	//
 	queuedTime = 0.5;
-
+	///
 	var interval = eventQueue[0] && eventQueue[0].interval || 0;
 	var foffset = currentTime - midi.currentTime;
-
+	///
 	if (MIDI.api !== 'webaudio') { // set currentTime on ctx
 		var now = getNow();
 		__now = __now || now;
 		ctx.currentTime = (now - __now) / 1000;
 	}
+	///
 	startTime = ctx.currentTime;
-	for (var n = 0; n < length; n++) {
+
+	///
+	for (var n = 0; n < length && messages < 100; n++) {
 		var obj = data[n];
 		if ((queuedTime += obj[1]) <= currentTime) {
 			offset = queuedTime;
 			continue;
 		}
+		///
 		currentTime = queuedTime - offset;
+		///
+    console.log(JSON.stringify(obj, undefined, 2));
 		var event = obj[0].event;
 		if (event.type !== 'channel') {
 			continue;
 		}
+		///
 		var channelId = event.channel;
 		var channel = MIDI.channels[channelId];
 		var delay = ctx.currentTime + ((currentTime + foffset + midi.startDelay) / 1000);
@@ -477,8 +475,9 @@ var stopAudio = function() {
 			});
 		}
 	}
-	// reset noteRegistrar
 	noteRegistrar = {};
 };
+
+exports.loadFile = loadFile();
 
 })();

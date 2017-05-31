@@ -17,7 +17,7 @@ var tonnetz = (function() {
       u;  // unit distance (distance between neighbors)
 
   module.density = 22;
-  module.ghostDuration = 0;
+  module.ghostDuration = 500;
   module.layout = LAYOUT_RIEMANN;
 
   var toneGrid = [];
@@ -58,7 +58,7 @@ var tonnetz = (function() {
   };
 
 
-  module.noteOn = function(c, pitch, skip) {
+  module.noteOn = function(c, pitch) {
     if (!(pitch in channels[c].pitches)) {
       var i = pitch%12;
       tones[i].state = STATE_ON;
@@ -77,7 +77,7 @@ var tonnetz = (function() {
     this.draw();
   };
 
-  module.noteOff = function(c, pitch, skip) {
+  module.noteOff = function(c, pitch) {
     if (pitch in channels[c].pitches) {
       var i = pitch%12;
       delete channels[c].pitches[pitch];

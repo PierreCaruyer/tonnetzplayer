@@ -49,21 +49,9 @@ $(function(){
       MIDI.Player.stepBack();
     else if(event.which === 32) // space pressed
       pausePlayStop();
-    else if(event.which === 13)// enter pressed
+    else if(event.which === 16) // enter pressed
       MIDI.Player.stepForward();
   });
-
-  document.querySelector('#file').addEventListener('change', function(e){
-		try {
-			var files = e.target.files;
-			if(files.length > 0)
-			   MIDI.Player.loadFile(files[0].name, MIDI.Player.start);
-		} catch (e) {
-			console.log(e);
-		} finally {
-
-		}
-	});
 
   $('#navbar a[data-toggle="tab"]').on('shown.bs.tab', function() {
     if ($(this).attr('href') != "#")

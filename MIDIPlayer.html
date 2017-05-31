@@ -371,7 +371,10 @@
     </div>
 
 	<div style="margin: 0 auto; width: 300px; float: right;" id="pause">
-		<input type="file" id="file" accept="audio/mid">
+		<form method="post" enctype="multipart/form-data" action="/api/music">
+			<input type="file" id="file" accept="audio/mid" name="musicUpload">
+			<input type="submit" id="fileSubmit" value="Submit">
+		</form>
 	</div>
 
 <script type="text/javascript">
@@ -427,11 +430,10 @@
 			player.currentTime = (self.x) / 420 * player.endTime;
 			if (player.currentTime < 0) player.currentTime = 0;
 			if (player.currentTime > player.endTime) player.currentTime = player.endTime;
-			if (self.state === "down") {
+			if (self.state === "down")
 				player.pause(true);
-			} else if (self.state === "up") {
+			else if (self.state === "up")
 				player.resume();
-			}
 		});
 		//
 		function timeFormatting(n) {
@@ -450,17 +452,27 @@
 		});
 	};
 	var player;
+</script>
 
-	document.querySelector('#file').addEventListener('change', function(e){
-    try {
-      var files = e.target.files;
-      if(files.length > 0) {
-         MIDI.Player.loadFile(files[0].name, MIDI.Player.start);
-       }
-    } catch (e) {
-      console.log(e);
-    } finally {	}
-  });
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+	var socket = io.connect('http://localhost:8080'); //insert server address here
+	socket.uploadedFiles = [];
+
+	document.querySelector('#file').addEventListener('change', function(e) {
+		try { //just sending a few information to the server so that it can properly send back the computed file
+			var files = e.target.files;
+			if(files.length > 0) socket.emit('new-upload', {name: files[0].name});
+		} catch (e) {
+			socket.emit('fileSelectionError', {desc: e});
+			console.log(e);
+		} finally {}
+	});
+
+	socket.on('file_decryoted', (file) => {
+		
+	});
 
 </script>
 </body>

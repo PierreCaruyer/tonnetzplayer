@@ -458,8 +458,7 @@
 
 <script>
 	var socket = io.connect('http://localhost:8080'); //insert server address here
-	socket.uploadedFiles = [];
-
+	console.log(socket.handshake);
 	document.querySelector('#file').addEventListener('change', function(e) {
 		try { //just sending a few information to the server so that it can properly send back the computed file
 			var files = e.target.files;
@@ -470,8 +469,8 @@
 		} finally {}
 	});
 
-	socket.on('file_decryoted', (file) => {
-		
+	socket.on('file_parsed', (file) => {
+
 	});
 
 </script>

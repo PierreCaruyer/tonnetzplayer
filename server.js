@@ -4,7 +4,7 @@ var express = require('express');
 var url = require('url');
 var mime = require('mime');
 var multer = require('multer');
-var player = require('./js/player.js')
+var player = require('./js/midi/player.js')
 var app = express();
 var server = http.createServer(app);
 var io = require('socket.io').listen(server);
@@ -12,6 +12,7 @@ var io = require('socket.io').listen(server);
 const SERVER_PORT = 8080;
 const VALID_UPLOAD_DIR = './uploads';
 const INVALID_UPLOAD_DIR = './invalid-uploads';
+var sockets = [];
 var receivedFiles = [];
 var file_remote_address_mapping = [];
 
@@ -23,7 +24,7 @@ server.on('close', () => {
   deleted_uploaded_files();
 });
 
-var delete_existing_dir_files(path) {
+var delete_existing_dir_files = function(path) {
   if(fs.existsSync(path))
     delete_dir_files(path);
 };
@@ -113,6 +114,7 @@ var mapping_contains = function(filename, socketAddress) {
 
 io.sockets.on('connection', (socket) => {
   console.log('New connection at : ' + socket.handshake.address);
+  var socket_address = socket.handshake.address;
 
   socket.on('clientException', (error) => {
   	console.log(error.desc);
@@ -126,14 +128,15 @@ io.sockets.on('connection', (socket) => {
   });
 
   app.on('event:file_uploaded', (file) => { //here the user finished uploading his file to the server
-    console.log(JSON.stringify(file, undefined, 2));
-    if(mapping_contains(file.originalname, socket.handsake.address)) {
-        //var content =
+    console.log(JSON.stringify(socket_address, undefined, 2));
+    if(mapping_contains(file.originalname, socket_address)) {
+        var content = player.load('./uploads' + file.originalname);
+        console.log(JSON.stringify(content, undefined, 2));
         //scoket.emit('file-parsed', {parsed-notes: , timeline})
     }
   });
 
-  socket.on('disconnect', () => {
+  /*socket.on('disconnect', () => {
     delete_all_files_from_address(socket.request.connection.remoteAddress);
-  });
+  });*/
 });

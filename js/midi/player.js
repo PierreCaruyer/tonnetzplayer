@@ -8,9 +8,7 @@
 
 if (typeof MIDI === 'undefined') MIDI = {};
 if (typeof MIDI.Player === 'undefined') MIDI.Player = {};
-
-(function() { 'use strict';
-
+(function() {
 var midi = MIDI.Player;
 midi.currentTime = 0;
 midi.endTime = 0;
@@ -206,8 +204,10 @@ var updateDisplay = function(skip) {
   var event = timeline[currentPos];
   if(skip) {
     tonnetz.wipe();
-    for(var n = 0; n < event.tone.length; n++)
+    for(var n = 0; n < event.tone.length; n++) {
+      MIDI.noteOn(event.tone[n].channel, event.tone[n].note, 500, 0);
       tonnetz.noteOn(event.tone[n].channel, event.tone[n].note);
+    }
   }
   else {
     for(var n = 0; n < event.tone.length; n++)
@@ -478,6 +478,6 @@ var stopAudio = function() {
 	noteRegistrar = {};
 };
 
-exports.loadFile = loadFile();
+exports.load = load;
 
 })();

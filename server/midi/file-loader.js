@@ -3,6 +3,8 @@ if (typeof MIDI.Player === 'undefined') MIDI.Player = {};
 (function() {
 
 var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
+var Replayer = require('../inc/jasmid/replayer.js');
+var MidiFile = require('../inc/jasmid/midifile.js');
 
 var midi = MIDI.Player;
 midi.currentTime = 0;
@@ -13,9 +15,6 @@ midi.timeWarp = 1;
 midi.startDelay = 0;
 midi.BPM = 120;
 midi.jumpStep = 1;
-midi.onsuccess = null;
-midi.onprogress = null;
-midi.onfailure = null;
 var CHANNELS = 17;
 
 midi.loadMidiFile = function(onsuccess, onprogress, onerror) {
@@ -40,10 +39,7 @@ midi.loadMidiFile = function(onsuccess, onprogress, onerror) {
 };
 
 var load = function(file, onsuccess, onprogress, onerror) {
-  midi.file = file;
-  midi.onsuccess = onsuccess;
-  midi.onprogress = onprogress;
-  midi.onfailure = onerror;
+  Replayer.clone();
 	if (file.indexOf('base64,') !== -1) {
 		var data = window.atob(file.split(',')[1]);
 		midi.currentData = data;

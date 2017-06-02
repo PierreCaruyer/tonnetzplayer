@@ -1,4 +1,5 @@
 var clone = function (o) {
+	console.log('clone');
 	if (typeof o != 'object') return (o);
 	if (o == null) return (o);
 	var ret = (typeof o.length == 'number') ? [] : {};
@@ -7,6 +8,7 @@ var clone = function (o) {
 };
 
 var Replayer = function(midiFile, timeWarp, eventProcessor, bpm) {
+	console.log('new replayer');
 	var trackStates = [];
 	var beatsPerMinute = bpm ? bpm : 120;
 	var bpmOverride = bpm ? true : false;
@@ -100,3 +102,6 @@ var Replayer = function(midiFile, timeWarp, eventProcessor, bpm) {
 		}
 	};
 };
+
+exports.Replayer = Replayer;
+exports.clone = clone;

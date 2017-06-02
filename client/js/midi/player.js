@@ -160,10 +160,6 @@ midi.loadMidiFile = function(onsuccess, onprogress, onerror) {
 };
 
 midi.loadFile = function(file, onsuccess, onprogress, onerror) {
-  load(file, onsuccess, onprogress, onerror);
-};
-
-var load = function(file, onsuccess, onprogress, onerror) {
   midi.file = file;
   midi.onsuccess = onsuccess;
   midi.onprogress = onprogress;
@@ -197,7 +193,6 @@ var load = function(file, onsuccess, onprogress, onerror) {
 		};
 		fetch.send();
 	}
-  return midi.data;
 };
 
 var updateDisplay = function(skip) {
@@ -397,7 +392,6 @@ var startAudio = function(currentTime, fromCache, onsuccess) {
 		///
 		currentTime = queuedTime - offset;
 		///
-    console.log(JSON.stringify(obj, undefined, 2));
 		var event = obj[0].event;
 		if (event.type !== 'channel') {
 			continue;
@@ -477,7 +471,5 @@ var stopAudio = function() {
 	}
 	noteRegistrar = {};
 };
-
-exports.load = load;
 
 })();

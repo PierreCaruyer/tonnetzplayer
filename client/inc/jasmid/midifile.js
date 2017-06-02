@@ -2,6 +2,7 @@
 class to parse the .mid file format
 (depends on stream.js)
 */
+
 function MidiFile(data) {
 	function readChunk(stream) {
 		var id = stream.read(4);
@@ -197,7 +198,6 @@ function MidiFile(data) {
 
 	stream = Stream(data);
 	var headerChunk = readChunk(stream);
-	console.log(JSON.stringify(headerChunk, undefined, 2));
 	if (headerChunk.id != 'MThd' || headerChunk.length != 6) {
 		throw "Bad .mid file - header not found";
 	}

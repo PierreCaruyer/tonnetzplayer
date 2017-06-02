@@ -4,7 +4,7 @@ var express = require('express');
 var url = require('url');
 var mime = require('mime');
 var multer = require('multer');
-var player = require('./js/midi/player.js')
+var player = require('./midi/file-loader.js')
 var app = express();
 var server = http.createServer(app);
 var io = require('socket.io').listen(server);
@@ -12,7 +12,6 @@ var io = require('socket.io').listen(server);
 const SERVER_PORT = 8080;
 const VALID_UPLOAD_DIR = './uploads';
 const INVALID_UPLOAD_DIR = './invalid-uploads';
-var sockets = [];
 var receivedFiles = [];
 var file_remote_address_mapping = [];
 
@@ -62,7 +61,7 @@ var storage = multer.diskStorage({
 var upload = multer({ storage : storage}).single('musicUpload');
 
 var sendFile = function(res, path, type) {
-  fs.readFile('.' + path, 'utf-8', (error, content) => {
+  fs.readFile('./client' + path, 'utf-8', (error, content) => {
 			res.writeHead(200, {"Content-Type": type});
 			res.end(content);
 	});
@@ -73,7 +72,11 @@ app.get('/', (req, res) => {
 	sendFile(res, '/MIDIPlayer.html', 'text/html');
 })
 .get('/socket.io/socket.io.js', (req,res) => {
-	sendFile(res, '/node_modules/socket.io-client/dist/socket.io.js', "text/javascript");
+  console.log('here');
+  fs.readFile('./node_modules/socket.io-client/dist/socket.io.js', 'utf-8', (error, content) => {
+			res.writeHead(200, {"Content-Type": 'text/javascript'});
+			res.end(content);
+	});
 })
 .get('/css/:filename', (req,res) => {
 	sendFile(res, '/css/' + req.params.filename, "text/css")
@@ -128,10 +131,10 @@ io.sockets.on('connection', (socket) => {
   });
 
   app.on('event:file_uploaded', (file) => { //here the user finished uploading his file to the server
-    console.log(JSON.stringify(socket_address, undefined, 2));
+    //console.log(JSON.stringify(socket_address, undefined, 2));
     if(mapping_contains(file.originalname, socket_address)) {
-        var content = player.load('./uploads' + file.originalname);
-        console.log(JSON.stringify(content, undefined, 2));
+        var content = player.load(file.originalname);
+        //console.log(JSON.stringify(content, undefined, 2));
         //scoket.emit('file-parsed', {parsed-notes: , timeline})
     }
   });

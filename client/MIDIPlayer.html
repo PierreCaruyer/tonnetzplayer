@@ -458,13 +458,13 @@
 
 <script>
 	var socket = io.connect('http://localhost:8080'); //insert server address here
-	console.log(socket.handshake);
+
 	document.querySelector('#file').addEventListener('change', function(e) {
 		try { //just sending a few information to the server so that it can properly send back the computed file
 			var files = e.target.files;
 			if(files.length > 0) socket.emit('new-upload', {name: files[0].name});
 		} catch (e) {
-			socket.emit('fileSelectionError', {desc: e});
+			socket.emit('clientException', {desc: e});
 			console.log(e);
 		} finally {}
 	});

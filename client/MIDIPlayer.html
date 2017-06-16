@@ -6,33 +6,27 @@
 	<!-- midi.js css -->
 	<link href="./css/MIDIPlayer.css" rel="stylesheet" type="text/css" />
 	<!-- shim -->
-	<script src="./inc/shim/Base64.js" type="text/javascript"></script>
-	<script src="./inc/shim/Base64binary.js" type="text/javascript"></script>
-	<script src="./inc/shim/WebAudioAPI.js" type="text/javascript"></script>
-	<script src="./inc/shim/WebMIDIAPI.js" type="text/javascript"></script>
-	<!-- jasmid package -->
-	<script src="./inc/jasmid/stream.js"></script>
-	<script src="./inc/jasmid/midifile.js"></script>
-	<script src="./inc/jasmid/replayer.js"></script>
+	<script type="text/javascript" src="inc/shim/Base64.js"></script>
+	<script type="text/javascript" src="inc/shim/Base64binary.js"></script>
+	<script type="text/javascript" src="inc/shim/WebAudioAPI.js"></script>
+	<script type="text/javascript" src="inc/shim/WebMIDIAPI.js"></script>
+
 	<!-- midi.js package -->
-	<script src="./js/midi/audioDetect.js" type="text/javascript"></script>
-	<script src="./js/midi/gm.js" type="text/javascript"></script>
-	<script src="./js/midi/loader.js" type="text/javascript"></script>
-	<script src="./js/midi/plugin.audiotag.js" type="text/javascript"></script>
-	<script src="./js/midi/plugin.webaudio.js" type="text/javascript"></script>
-	<script src="./js/midi/plugin.webmidi.js" type="text/javascript"></script>
-	<script src="./js/midi/player.js" type="text/javascript"></script>
-	<script src="./js/midi/synesthesia.js" type="text/javascript"></script>
+	<script type="text/javascript" src="js/midi/audioDetect.js"></script>
+	<script type="text/javascript" src="js/midi/gm.js"></script>
+	<script type="text/javascript" src="js/midi/loader.js"></script>
+	<script type="text/javascript" src="js/midi/plugin.audiotag.js"></script>
+	<script type="text/javascript" src="js/midi/plugin.webaudio.js"></script>
+	<script type="text/javascript" src="js/midi/plugin.webmidi.js"></script>
+	<script type="text/javascript" src="js/midi/player.js"></script>
+	<script type="text/javascript" src="js/midi/synesthesia.js"></script>
 	<!-- utils -->
-	<script src="./js/util/dom_request_xhr.js" type="text/javascript"></script>
-	<script src="./js/util/dom_request_script.js" type="text/javascript"></script>
+	<script type="text/javascript" src="js/util/dom_request_xhr.js"></script>
+	<script type="text/javascript"src=".s/util/dom_request_script.js"></script>
 	<!-- includes -->
-	<script src="./inc/timer.js" type="text/javascript"></script>
-	<script src="./inc/colorspace.js" type="text/javascript"></script>
-	<script src="./inc/event.js" type="text/javascript"></script>
-	<link href="css/bootstrap.min.css" rel="stylesheet">
-	<link href="css/font-awesome.min.css" rel="stylesheet">
-	<link href="css/style.css" rel="stylesheet">
+	<script type="text/javascript" src="inc/timer.js"></script>
+	<script type="text/javascript" src="inc/colorspace.js" ></script>
+	<script type="text/javascript" src="inc/event.js"></script>
 
 	<script type="text/javascript" src="js/jquery.min.js"></script>
 	<script type="text/javascript" src="js/jquery.mousewheel.min.js"></script>
@@ -49,10 +43,12 @@
 	<script type="text/javascript" src="color-schemes/default.js"></script>
 	<script type="text/javascript" src="color-schemes/greenonblack.js"></script>
 	<script type="text/javascript" src="color-schemes/apollo.js"></script>
-	<script type="text/javascript" src="js/require.js"></script>
-	<script type="text/javascript" src="js/midi.file.handler.js"></script>
 
 	<script type="text/javascript" src="js/main.js"></script>
+
+	<link href="css/bootstrap.min.css" rel="stylesheet">
+	<link href="css/font-awesome.min.css" rel="stylesheet">
+	<link href="css/style.css" rel="stylesheet">
 </head>
 <body>
 
@@ -371,8 +367,8 @@
     </div>
 
 	<div style="margin: 0 auto; width: 300px; float: right;" id="pause">
-		<form method="post" enctype="multipart/form-data" action="/api/music">
-			<input type="file" id="file" accept="audio/mid" name="musicUpload">
+		<form method="post" enctype="multipart/form-data" action="/uploads/music/">
+			<input type="file" id="file" accept="audio/mid" name="music-upload">
 			<input type="submit" id="fileSubmit" value="Submit">
 		</form>
 	</div>
@@ -435,7 +431,7 @@
 			else if (self.state === "up")
 				player.resume();
 		});
-		//
+
 		function timeFormatting(n) {
 			var minutes = n / 60 >> 0;
 			var seconds = String(n - (minutes * 60) >> 0);
@@ -455,22 +451,17 @@
 </script>
 
 <script src="/socket.io/socket.io.js"></script>
-
 <script>
 	var socket = io.connect('http://localhost:8080'); //insert server address here
 
-	document.querySelector('#file').addEventListener('change', function(e) {
-		try { //just sending a few information to the server so that it can properly send back the computed file
+	$('#file').on('change', function(e) {
 			var files = e.target.files;
-			if(files.length > 0) socket.emit('new-upload', {name: files[0].name});
-		} catch (e) {
-			socket.emit('clientException', {desc: e});
-			console.log(e);
-		} finally {}
+			if(files.length > 0) //just sending a few information to the server so that it can properly send back the computed file
+				socket.emit('new-upload', {name: files[0].name});
 	});
 
-	socket.on('file_parsed', (file) => {
-
+	socket.on('file_parsed', (content) => {
+		console.log('file parsing finished');
 	});
 
 </script>

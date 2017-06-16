@@ -4,16 +4,20 @@ var express = require('express');
 var url = require('url');
 var mime = require('mime');
 var multer = require('multer');
-var player = require('./midi/file-loader.js')
+var loader = require('./midi/file-loader.js')
 var app = express();
 var server = http.createServer(app);
 var io = require('socket.io').listen(server);
+var router = express.Router();
 
 const SERVER_PORT = 8080;
+const API_MUSIC = '/uploads/music/';
 const VALID_UPLOAD_DIR = './uploads';
 const INVALID_UPLOAD_DIR = './invalid-uploads';
-var receivedFiles = [];
-var file_remote_address_mapping = [];
+const UPLOAD_FIELDNAME = 'music-upload';
+var pending_uploads = {},
+    completed_uploads = {},
+    sockets_by_address = {};
 
 server.listen(SERVER_PORT, () => {
   console.log('Server started to listen on port : ' + SERVER_PORT);
@@ -42,23 +46,30 @@ var delete_dir_files = function(dir) {
   });
 };
 
-var storage = multer.diskStorage({
-  destination: function (req, file, callback) {
+/*var storage = multer.diskStorage({
+  destination: function (req, file, directoryRedirect) {
     if(file.mimetype === 'audio/midi') {
-      callback(null, VALID_UPLOAD_DIR);
-      app.emit('event:file_uploaded', file);
-      receivedFiles.push(file);
-    }
-    else {
-      callback(null, INVALID_UPLOAD_DIR);
+      directoryRedirect(null, VALID_UPLOAD_DIR);
+    } else {
+      directoryRedirect(null, INVALID_UPLOAD_DIR);
     }
   },
-  filename: function (req, file, callback) {
-    callback(null, file.originalname);
+  filename: function (req, file, rename) {
+    rename(null, file.originalname);
   }
 });
 
-var upload = multer({ storage : storage}).single('musicUpload');
+var upload = multer({ storage : storage }).single('music-upload');*/
+
+var upload = multer({
+  dest: VALID_UPLOAD_DIR,
+  limits: {
+    fieldNameSize: 999999999,
+    fieldSize: 999999999
+  },
+  includeEmptyFields: true,
+  inMemory: true,
+}).single(UPLOAD_FIELDNAME);
 
 var sendFile = function(res, path, type) {
   fs.readFile('./client' + path, 'utf-8', (error, content) => {
@@ -67,27 +78,31 @@ var sendFile = function(res, path, type) {
 	});
 };
 
-//Sending the files with express here
+var restore_filename = function(file) {
+  var dest = file.destination,
+      correct_name = file.originalname,
+      base_name = file.filename,
+      upload_dest = '';
+  upload_dest = (file.mimetype === 'audio/midi') ? dest : INVALID_UPLOAD_DIR;
+  fs.rename(dest + '/' + base_name, upload_dest + '/' + correct_name);
+};
+
+//Sending the .css, .js ... files with express here
 app.get('/', (req, res) => {
 	sendFile(res, '/MIDIPlayer.html', 'text/html');
 })
-.get('/socket.io/socket.io.js', (req,res) => {
-  console.log('here');
-  fs.readFile('./node_modules/socket.io-client/dist/socket.io.js', 'utf-8', (error, content) => {
-			res.writeHead(200, {"Content-Type": 'text/javascript'});
-			res.end(content);
-	});
-})
-.get('/css/:filename', (req,res) => {
-	sendFile(res, '/css/' + req.params.filename, "text/css")
-})
-.post("/api/music", (req,res) => {
+.post(API_MUSIC, (req,res) => {
     upload(req,res,function(err) {
-        if(err) return res.status(500).end("Error uploading file.");
-        res.redirect('back');
+      if(err) {
+        return res.status(500).end("Error occured while uploading file");
+      } else if(req.file) {
+        restore_filename(req.file);
+        app.emit('upload-completed', req.file);
+      }
+      res.redirect('back');
     });
 })
-.use((req, res, next) => {
+.use((req, res, next) => { //default
 	var path = url.parse(req.url).pathname;
 	var type = mime.lookup(path);
 	sendFile(res, path, type);
@@ -95,51 +110,43 @@ app.get('/', (req, res) => {
 
 var delete_all_files_from_address = function(ip_address) {
   var indices_to_slice = [];
-  for(var c = 0; c < file_remote_address_mapping.length; c++)
-    if(file_remote_address_mapping[c].remote_address === ip_address)
+  for(var c = 0; c < pending_uploads.length; c++)
+    if(pending_uploads[c].remote_address === ip_address)
       indices_to_slice.push(c);
 
   if(indices_to_slice.length === 0)
     return false;
 
   for(var a = indices_to_slice.length - 1; a >= 0; a--)
-    file_remote_address_mapping.slice(indices_to_slice[a], 1);
+    pending_uploads.slice(indices_to_slice[a], 1);
 
   return true;
 };
 
-var mapping_contains = function(filename, socketAddress) {
-  for(var c = 0; c < file_remote_address_mapping.length; c++)
-    if(file_remote_address_mapping.remoteAddress === socketAddress && filename === file_remote_address_mapping.filename)
-      return c;
-  return -1;
-};
+app.on('upload-completed', (file) => {
+  console.log('upload ' + file.originalname + ' finished');
+  var socket_address = pending_uploads[file.originalname];
+  var socket = sockets_by_address[socket_address];
+  var midiContent = loader.loadMidiFileContent(socket, VALID_UPLOAD_DIR + '/' + file.originalname);
+});
 
 io.sockets.on('connection', (socket) => {
-  console.log('New connection at : ' + socket.handshake.address);
-  var socket_address = socket.handshake.address;
+  var socket_address = socket.request.connection.remoteAddress;
+  sockets_by_address[socket_address] = socket;
+  console.log('New connection at : ' + socket_address);
 
   socket.on('clientException', (error) => {
   	console.log(error.desc);
   });
 
   socket.on('new-upload', (file) => { //here the user selected a file but did not submit
-    file_remote_address_mapping.push({
-      remote_address: socket.request.connection.remoteAddress,
-      filename: file.name
-    });
+    console.log('New pending upload : ' + file.name);
+    pending_uploads[file.name] = socket.request.connection.remoteAddress;
+    app.route(API_MUSIC).post(loader.startUpload(upload, socket, file.name));
   });
 
-  app.on('event:file_uploaded', (file) => { //here the user finished uploading his file to the server
-    //console.log(JSON.stringify(socket_address, undefined, 2));
-    if(mapping_contains(file.originalname, socket_address)) {
-        var content = player.load(file.originalname);
-        //console.log(JSON.stringify(content, undefined, 2));
-        //scoket.emit('file-parsed', {parsed-notes: , timeline})
-    }
+  socket.on('disconnect', (message) => {
+    console.log('Goodbye ' + socket_address);
+    delete sockets_by_address[socket_address];
   });
-
-  /*socket.on('disconnect', () => {
-    delete_all_files_from_address(socket.request.connection.remoteAddress);
-  });*/
 });

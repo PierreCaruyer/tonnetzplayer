@@ -7,7 +7,8 @@ var clone = function (o) {
 	return ret;
 };
 
-var Replayer = function(midiFile, timeWarp, eventProcessor, bpm) {
+exports.Replayer = function(midiFile, timeWarp, eventProcessor, bpm) {
+	'use strict';
 	console.log('new replayer');
 	var trackStates = [];
 	var beatsPerMinute = bpm ? bpm : 120;
@@ -102,6 +103,3 @@ var Replayer = function(midiFile, timeWarp, eventProcessor, bpm) {
 		}
 	};
 };
-
-exports.Replayer = Replayer;
-exports.clone = clone;

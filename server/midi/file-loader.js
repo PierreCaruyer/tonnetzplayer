@@ -2,9 +2,9 @@ if (typeof MIDI === 'undefined') MIDI = {};
 if (typeof MIDI.Player === 'undefined') MIDI.Player = {};
 (function() {
 
+var fs = require('fs');
 var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
-var Replayer = require('../inc/jasmid/replayer.js');
-var MidiFile = require('../inc/jasmid/midifile.js');
+var Replayer = require('../inc/jasmid/replayer.js').Replayer;
 
 var midi = MIDI.Player;
 midi.currentTime = 0;
@@ -14,225 +14,59 @@ midi.playing = false;
 midi.timeWarp = 1;
 midi.startDelay = 0;
 midi.BPM = 120;
-midi.jumpStep = 1;
 var CHANNELS = 17;
 
-midi.loadMidiFile = function(onsuccess, onprogress, onerror) {
-	try {
+exports.loadMidiFileContent = function(socket, file, onsuccess, onprogress, onerror) {
+  console.log('Starting to load ' + file + '\'s midi content');
+  fs.readFile(file, (err, data) => {
+    console.log(data);
+  });
+	/*try {
 		midi.replayer = new Replayer(MidiFile(midi.currentData), midi.timeWarp, null, midi.BPM);
     console.log(midi.replayer);
 		midi.data = midi.replayer.getData();
 		midi.endTime = getLength();
     var pausePlayButton = document.getElementById('pausePlayStop');
     pausePlayButton.src = "./images/pause.png";
-		///
-		MIDI.loadPlugin({
-// 			instruments: midi.getFileInstruments(),
-			onsuccess: onsuccess,
-			onprogress: onprogress,
-			onerror: onerror
-		});
 	} catch(event) {
     console.log(event);
 		onerror && onerror(event);
-	}
+	}*/
 };
 
-var load = function(file, onsuccess, onprogress, onerror) {
-  Replayer.clone();
-	if (file.indexOf('base64,') !== -1) {
-		var data = window.atob(file.split(',')[1]);
-		midi.currentData = data;
-		midi.loadMidiFile(onsuccess, onprogress, onerror);
-	} else {
-    var fetch = new XMLHttpRequest();
-		fetch.open('GET', file);
-    //console.log(JSON.stringify(fetch, undefined ,2));
-		//fetch.overrideMimeType('text/plain; charset=x-user-defined');
-		fetch.onreadystatechange = function() {
-			if (this.readyState === 4) {
-				if (this.status === 200) {
-					var t = this.responseText || '';
-					var ff = [];
-					var mx = t.length;
-					var scc = String.fromCharCode;
-					for (var z = 0; z < mx; z++) {
-						ff[z] = scc(t.charCodeAt(z) & 255);
-					}
-					///
-					var data = ff.join('');
-					midi.currentData = data;
-					midi.loadMidiFile(onsuccess, onprogress, onerror);
-				} else {
-					onerror && onerror('Unable to load MIDI file');
-				}
-			}
-		};
-		fetch.send();
-	}
-  console.log(JSON.stringify(midi.data, undefined, 2));
-  return midi.data;
+exports.startUpload = function(callback/*, socket, file, onsuccess, onprogress, onerror*/) {
+  return callback;
+  /*return function(req, res) {
+    /*var fetch = new XMLHttpRequest();
+  	fetch.open('GET', file);
+    console.log('loading ' + file);
+  	fetch.onreadystatechange = function() {
+  		if (this.readyState === 4) {
+  			if (this.status === 200) {
+  				var t = this.responseText || '';
+  				var ff = [];
+  				var mx = t.length;
+  				var scc = String.fromCharCode;
+  				for (var z = 0; z < mx; z++) {
+  					ff[z] = scc(t.charCodeAt(z) & 255);
+  				}
+
+  				var data = ff.join('');
+  				midi.currentData = data;
+  				midi.loadMidiFile(onsuccess, onprogress, onerror);
+  			} else {
+  				onerror && onerror('Unable to load MIDI file');
+  			}
+  		}
+      else
+        console.log('wrong state');
+  	};
+  	fetch.send();
+    return midi.data;
+  };*/
 };
 
-var getContext = function() {
-	if (MIDI.api === 'webaudio') {
-		return MIDI.WebAudio.getContext();
-	} else {
-		midi.ctx = {currentTime: 0};
-	}
-	return midi.ctx;
-};
-
-var setUpTimeline = function(data, offset, ctx, length) {
-  if (!midi.replayer) return;
-	var currentTime = midi.restart;
-  var foffset = currentTime - midi.currentTime;
-	var note;
-	queuedTime = 0.5;
-  for(var n = 0; n < length; n++) {
-    timeline.push({
-      tone: [],
-      offTone: [],
-      time: 0
-    });
-  }
-	for (var n = 0; n < length; n++) {
-		var obj = data[n];
-		if ((queuedTime += obj[1]) <= currentTime) {
-			offset = queuedTime;
-			continue;
-		}
-		var event = obj[0].event;
-		if (event.type !== 'channel')
-			continue;
-		var channelId = event.channel;
-		if (event.subtype === 'noteOn') {
-      note = event.noteNumber - (midi.MIDIOffset || 0);
-      array.push({
-        subtype: 'noteOn',
-    		channel: channelId,
-    		note: note,
-    	});
-      for(var a = 0; a < array.length; a++)
-        timeline[n].tone.push(array[a]);
-      timeline[n].time = queuedTime + midi.startDelay;
-    } else if(event.subtype === 'noteOff') {
-      var offNotes = array.shift();
-      for(var a = 0; a < array.length; a++) {
-        array[a].subtype = 'noteOff';
-        timeline[n].tone.push(array[a]);
-      }
-      timeline[n].offTone.push(offNotes);
-      timeline[n].time = queuedTime + midi.startDelay;
-		}
-	}
-};
-
-var clone = function (o) {
-	if (typeof o != 'object') return (o);
-	if (o == null) return (o);
-	var ret = (typeof o.length == 'number') ? [] : {};
-	for (var key in o) ret[key] = clone(o[key]);
-	return ret;
-};
-
-var Replayer = function(midiFile, timeWarp, eventProcessor, bpm) {
-	var trackStates = [];
-	var beatsPerMinute = bpm ? bpm : 120;
-	var bpmOverride = bpm ? true : false;
-
-	var ticksPerBeat = midiFile.header.ticksPerBeat;
-
-	for (var i = 0; i < midiFile.tracks.length; i++) {
-		trackStates[i] = {
-			'nextEventIndex': 0,
-			'ticksToNextEvent': (
-				midiFile.tracks[i].length ?
-					midiFile.tracks[i][0].deltaTime :
-					null
-			)
-		};
-	}
-
-	var nextEventInfo;
-	var samplesToNextEvent = 0;
-
-	function getNextEvent() {
-		var ticksToNextEvent = null;
-		var nextEventTrack = null;
-		var nextEventIndex = null;
-
-		for (var i = 0; i < trackStates.length; i++) {
-			if (
-				trackStates[i].ticksToNextEvent != null
-				&& (ticksToNextEvent == null || trackStates[i].ticksToNextEvent < ticksToNextEvent)
-			) {
-				ticksToNextEvent = trackStates[i].ticksToNextEvent;
-				nextEventTrack = i;
-				nextEventIndex = trackStates[i].nextEventIndex;
-			}
-		}
-		if (nextEventTrack != null) {
-			/* consume event from that track */
-			var nextEvent = midiFile.tracks[nextEventTrack][nextEventIndex];
-			if (midiFile.tracks[nextEventTrack][nextEventIndex + 1]) {
-				trackStates[nextEventTrack].ticksToNextEvent += midiFile.tracks[nextEventTrack][nextEventIndex + 1].deltaTime;
-			} else {
-				trackStates[nextEventTrack].ticksToNextEvent = null;
-			}
-			trackStates[nextEventTrack].nextEventIndex += 1;
-			/* advance timings on all tracks by ticksToNextEvent */
-			for (var i = 0; i < trackStates.length; i++) {
-				if (trackStates[i].ticksToNextEvent != null) {
-					trackStates[i].ticksToNextEvent -= ticksToNextEvent
-				}
-			}
-			return {
-				"ticksToEvent": ticksToNextEvent,
-				"event": nextEvent,
-				"track": nextEventTrack
-			}
-		} else {
-			return null;
-		}
-	};
-	//
-	var midiEvent;
-	var temporal = [];
-	//
-	function processEvents() {
-		function processNext() {
-		    if (!bpmOverride && midiEvent.event.type == "meta" && midiEvent.event.subtype == "setTempo" ) {
-				// tempo change events can occur anywhere in the middle and affect events that follow
-				beatsPerMinute = 60000000 / midiEvent.event.microsecondsPerBeat;
-			}
-			///
-			var beatsToGenerate = 0;
-			var secondsToGenerate = 0;
-			if (midiEvent.ticksToEvent > 0) {
-				beatsToGenerate = midiEvent.ticksToEvent / ticksPerBeat;
-				secondsToGenerate = beatsToGenerate / (beatsPerMinute / 60);
-			}
-			///
-			var time = (secondsToGenerate * 1000 * timeWarp) || 0;
-			temporal.push([ midiEvent, time]);
-			midiEvent = getNextEvent();
-		};
-		///
-		if (midiEvent = getNextEvent()) {
-			while(midiEvent) processNext(true);
-		}
-	};
-	processEvents();
-	return {
-		"getData": function() {
-			return clone(temporal);
-		}
-	};
-};
-
-
-function MidiFile(data) {
+var MidiFile = function(data) {
 	function readChunk(stream) {
 		var id = stream.read(4);
 		var length = stream.readInt32();
@@ -250,9 +84,7 @@ function MidiFile(data) {
 		event.deltaTime = stream.readVarInt();
 		var eventTypeByte = stream.readInt8();
 		if ((eventTypeByte & 0xf0) == 0xf0) {
-			/* system / meta event */
 			if (eventTypeByte == 0xff) {
-				/* meta event */
 				event.type = 'meta';
 				var subtypeByte = stream.readInt8();
 				var length = stream.readVarInt();
@@ -427,6 +259,7 @@ function MidiFile(data) {
 
 	stream = Stream(data);
 	var headerChunk = readChunk(stream);
+  console.log(JSON.stringify(headerChunk, undefined, 2));
 	if (headerChunk.id != 'MThd' || headerChunk.length != 6) {
 		throw "Bad .mid file - header not found";
 	}
@@ -464,8 +297,75 @@ function MidiFile(data) {
 		'header': header,
 		'tracks': tracks
 	}
-}
+};
 
-exports.load = load;
+var Stream = function(str) {
+	var position = 0;
+
+	function read(length) {
+		var result = str.substr(position, length);
+		position += length;
+		return result;
+	}
+
+	/* read a big-endian 32-bit integer */
+	function readInt32() {
+		var result = (
+			(str.charCodeAt(position) << 24)
+			+ (str.charCodeAt(position + 1) << 16)
+			+ (str.charCodeAt(position + 2) << 8)
+			+ str.charCodeAt(position + 3));
+		position += 4;
+		return result;
+	}
+
+	/* read a big-endian 16-bit integer */
+	function readInt16() {
+		var result = (
+			(str.charCodeAt(position) << 8)
+			+ str.charCodeAt(position + 1));
+		position += 2;
+		return result;
+	}
+
+	/* read an 8-bit integer */
+	function readInt8(signed) {
+		var result = str.charCodeAt(position);
+		if (signed && result > 127) result -= 256;
+		position += 1;
+		return result;
+	}
+
+	function eof() {
+		return position >= str.length;
+	}
+
+	/* read a MIDI-style variable-length integer
+		(big-endian value in groups of 7 bits,
+		with top bit set to signify that another byte follows)
+	*/
+	function readVarInt() {
+		var result = 0;
+		while (true) {
+			var b = readInt8();
+			if (b & 0x80) {
+				result += (b & 0x7f);
+				result <<= 7;
+			} else {
+				/* b is the last byte */
+				return result + b;
+			}
+		}
+	}
+
+	return {
+		'eof': eof,
+		'read': read,
+		'readInt32': readInt32,
+		'readInt16': readInt16,
+		'readInt8': readInt8,
+		'readVarInt': readVarInt
+	}
+};
 
 })();

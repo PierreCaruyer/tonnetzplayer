@@ -163,7 +163,6 @@ midi.loadMidiFile = function(onsuccess, onprogress, onerror) {
 };
 
 midi.loadFile = function(file, onsuccess, onprogress, onerror) {
-  midi.socket = socket;
   midi.file = file;
   midi.onsuccess = onsuccess;
   midi.onprogress = onprogress;
@@ -180,6 +179,7 @@ midi.loadFile = function(file, onsuccess, onprogress, onerror) {
 			if (this.readyState === 4) {
 				if (this.status === 200) {
 					var t = this.responseText || '';
+          console.log(t);
 					var ff = [];
 					var mx = t.length;
 					var scc = String.fromCharCode;

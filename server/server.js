@@ -24,7 +24,6 @@ server.listen(SERVER_PORT, () => {
 });
 
 server.on('close', () => {
-  deleted_uploaded_files();
 });
 
 var delete_existing_dir_files = function(path) {

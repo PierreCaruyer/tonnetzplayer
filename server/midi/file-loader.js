@@ -26,8 +26,6 @@ exports.loadMidiFileContent = function(socket, file, onsuccess, onprogress, oner
     console.log(midi.replayer);
 		midi.data = midi.replayer.getData();
 		midi.endTime = getLength();
-    var pausePlayButton = document.getElementById('pausePlayStop');
-    pausePlayButton.src = "./images/pause.png";
 	} catch(event) {
     console.log(event);
 		onerror && onerror(event);

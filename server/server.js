@@ -124,7 +124,7 @@ var delete_all_files_from_address = function(ip_address) {
 };
 
 app.on('upload-completed', (file) => {
-  console.log('upload ' + file.originalname + ' finished');
+  console.log('Finished uploading : ' + file.originalname);
   var socket_address = pending_uploads[file.originalname];
   var socket = sockets_by_address[socket_address];
   var midiContent = loader.loadMidiFileContent(socket, VALID_UPLOAD_DIR + '/' + file.originalname);

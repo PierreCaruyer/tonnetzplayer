@@ -19,7 +19,7 @@ var CHANNELS = 17;
 exports.loadMidiFileContent = function(socket, file, onsuccess, onprogress, onerror) {
   console.log('Starting to load ' + file + '\'s midi content');
   fs.readFile(file, (err, data) => {
-    console.log(data);
+    console.log(data.length);
   });
 	/*try {
 		midi.replayer = new Replayer(MidiFile(midi.currentData), midi.timeWarp, null, midi.BPM);

@@ -461,14 +461,8 @@
 
 	$('#file').on('change', (event) => {
 			var files = event.target.files;
-			if(files.length > 0) {//just sending a few information to the server so that it can properly send back the computed file
-				socket.emit('midi-upload', {
-					name: files[0].name,
-					lastModified: files[0].lastModified,
-					type: files[0].type
-				}
-			);
-		}
+			if(files.length > 0) //just sending a few information to the server so that it can properly send back the computed file
+				socket.emit('midi-upload', {name: files[0].name, type: files[0].type});
 	});
 
 	socket.on('file_parsed', (content) => {

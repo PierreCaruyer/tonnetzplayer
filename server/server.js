@@ -4,7 +4,7 @@ var express = require('express');
 var url = require('url');
 var mime = require('mime');
 var multer = require('multer');
-var loader = require('./midi/file-loader.js')
+
 var app = express();
 var server = http.createServer(app);
 var io = require('socket.io').listen(server);
@@ -16,14 +16,14 @@ const VALID_UPLOAD_DIR = './uploads';
 const INVALID_UPLOAD_DIR = './invalid-uploads';
 const UPLOAD_FIELDNAME = 'music-upload';
 var pending_uploads = {},
-    completed_uploads = {},
-    sockets_by_address = {};
+    completed_uploads = {};
 
 server.listen(SERVER_PORT, () => {
   console.log('Server started to listen on port : ' + SERVER_PORT);
 });
 
 server.on('close', () => {
+  deleted_uploaded_files();
   console.log('Shutting down server');
 });
 
@@ -32,7 +32,7 @@ var delete_existing_dir_files = function(path) {
     delete_dir_files(path);
 };
 
-var deleted_uploaded_files = function() {
+var delete_uploaded_files = function() {
   delete_existing_dir_files(INVALID_UPLOAD_DIR);
   delete_existing_dir_files(VALID_UPLOAD_DIR);
 };
@@ -45,21 +45,6 @@ var delete_dir_files = function(dir) {
     }
   });
 };
-
-/*var storage = multer.diskStorage({
-  destination: function (req, file, directoryRedirect) {
-    if(file.mimetype === 'audio/midi') {
-      directoryRedirect(null, VALID_UPLOAD_DIR);
-    } else {
-      directoryRedirect(null, INVALID_UPLOAD_DIR);
-    }
-  },
-  filename: function (req, file, rename) {
-    rename(null, file.originalname);
-  }
-});
-
-var upload = multer({ storage : storage }).single('music-upload');*/
 
 var upload = multer({
   dest: VALID_UPLOAD_DIR,
@@ -99,6 +84,7 @@ app.get('/', (req, res) => {
         restore_filename(req.file);
         app.emit('upload-completed', req.file);
       }
+      //Here the client's page refreshes after the upload is done
       res.redirect('back');
     });
 })
@@ -108,38 +94,58 @@ app.get('/', (req, res) => {
 	sendFile(res, path, type);
 })
 
+var loadMidiFileContent = function(socket, file) {
+  console.log('Starting to load ' + file + '\'s midi content');
+  fs.readFile(file, (err, content) => {
+    var arraybuffer = [];
+    for(var c = 0; c < content.length; c++) {
+      arraybuffer[c] = String.fromCharCode(content[c] & 255);
+    }
+    var data = arraybuffer.join('');
+    console.log(data);
+    socket.emit('file-parsed', data);
+  });
+};
+
+/*
+** Here the name of the file is retrieved and is deleted from the pending uploads queue
+** This file name will then be used as soon as the client's page is refreshed
+** Once the client page is refreshed the midi data will be computed and sent to the client
+*/
 app.on('upload-completed', (file) => {
   console.log('Finished uploading : ' + file.originalname);
-  var socket_address = pending_uploads[file.originalname].address;
-  var socket = sockets_by_address[socket_address];
-  var midiContent = loader.loadMidiFileContent(socket, VALID_UPLOAD_DIR + '/' + file.originalname);
-  //socket.emit('file-parsed', {content: midiContent});
+  var socket_address = pending_uploads[file.originalname];
+  completed_uploads[socket_address] = {dir: VALID_UPLOAD_DIR, name: file.originalname};
+  delete pending_uploads[file.originalname];
 });
 
 io.sockets.on('connection', (socket) => {
   var socket_address = socket.request.connection.remoteAddress;
-  sockets_by_address[socket_address] = socket;
+
   console.log('New connection at : ' + socket_address);
+  /**
+  ** Here, we check for a file that would have been uploaded from the same address
+  ** as the socket that has just connected to the server
+  */
+  if(completed_uploads[socket_address]) {
+    var dir = completed_uploads[socket_address].dir;
+    var file = completed_uploads[socket_address].name;
+    loadMidiFileContent(socket, dir + '/' + file);
+    fs.unlink(dir + '/' + file);
+  }
 
   socket.on('clientException', (error) => {
   	console.log(error.desc);
   });
 
+  //A client has selected a
   socket.on('midi-upload', (file) => { //here the user selected a file but did not submit
-    console.log('New pending upload : ' + file.name);
     if(file.type !== 'audio/midi') {
-      socket.emit('wrong-file-type', {
-          err: 'The ' + file.type + ' file type is not supported',
-          exp: 'Expected file type was : audio/midi file'
-        }
-      );
+      socket.emit('wrong-file-type', { err: 'The ' + file.type + ' file type is not supported', exp: 'Expected file type was : audio/midi file' });
       return;
     }
-    pending_uploads[file.name] = {
-      address: socket.request.connection.remoteAddress,
-      lastModified: file.lastModified,
-      type: file.type
-    };
+    console.log('New pending upload : ' + file.name);
+    pending_uploads[file.name] = socket.request.connection.remoteAddress;
     setTimeout(() => {
       if(pending_uploads[file.name]) delete pending_uploads[file.name];
     }, ONE_MINUTE); //The upload will stay in a pending state for 60 seconds
@@ -147,6 +153,5 @@ io.sockets.on('connection', (socket) => {
 
   socket.on('disconnect', (message) => {
     console.log('Goodbye ' + socket_address);
-    delete sockets_by_address[socket_address];
   });
 });

@@ -146,7 +146,7 @@ midi.loadMidiFile = function(onsuccess, onprogress, onerror) {
 		midi.endTime = getLength();
     var pausePlayButton = document.getElementById('pausePlayStop');
     pausePlayButton.src = "./images/pause.png";
-		
+
 		MIDI.loadPlugin({
 // 			instruments: midi.getFileInstruments(),
 			onsuccess: onsuccess,

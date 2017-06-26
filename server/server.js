@@ -11,10 +11,11 @@ var io = require('socket.io').listen(server);
 
 const ONE_MINUTE = 60000;
 const SERVER_PORT = 8080;
-const API_MUSIC = '/uploads/music/';
+const API_MUSIC = '/uploads/music/'; //Must match with the action field of the client's form
 const VALID_UPLOAD_DIR = './uploads';
 const INVALID_UPLOAD_DIR = './invalid-uploads';
-const UPLOAD_FIELDNAME = 'music-upload';
+const UPLOAD_FIELDNAME = 'music-upload'; //Must match with the name field of the file input in the client's form
+
 var pending_uploads = {},
     completed_uploads = {};
 
@@ -23,13 +24,15 @@ server.listen(SERVER_PORT, () => {
 });
 
 server.on('close', () => {
-  deleted_uploaded_files();
+  deleted_uploaded_files(); //deleting uploaded files to clear a bit space
   console.log('Shutting down server');
 });
 
 var delete_existing_dir_files = function(path) {
-  if(fs.existsSync(path))
+  fs.access(path, fs.F_OK, (err) => {
+    if(err) throw err;
     delete_dir_files(path);
+  });
 };
 
 var delete_uploaded_files = function() {
@@ -38,11 +41,14 @@ var delete_uploaded_files = function() {
 };
 
 var delete_dir_files = function(dir) {
-  fs.readdir(dir, (err, files) => {
-    for(var n = 0; n < files.length; n++) {
-      fs.unlink(dir + '/' + files[n]);
-      console.log('Deleted ' + files[n] + ' !');
-    }
+  fs.access(dir, fs.F_OK, (err) => {
+    if(err) throw err;
+    fs.readdir(dir, (err, files) => {
+      for(var n = 0; n < files.length; n++) {
+        fs.unlink(dir + '/' + files[n]);
+        console.log('Deleted ' + files[n] + ' !');
+      }
+    });
   });
 };
 
@@ -68,8 +74,21 @@ var restore_filename = function(file) {
       correct_name = file.originalname,
       base_name = file.filename,
       upload_dest = '';
+  poke_dir(INVALID_UPLOAD_DIR);
+  poke_dir(VALID_UPLOAD_DIR);
   upload_dest = (file.mimetype === 'audio/midi') ? dest : INVALID_UPLOAD_DIR;
   fs.rename(dest + '/' + base_name, upload_dest + '/' + correct_name);
+};
+
+var poke_dir = function(dir) {
+  fs.access(dir, fs.F_OK, (err) => {
+    if(err) fs.mkdir(dir);
+  });
+};
+
+var poke_upload_dirs = function() {
+  poke_dir(VALID_UPLOAD_DIR);
+  poke_dir(INVALID_UPLOAD_DIR);
 };
 
 //Sending the .css, .js ... files with express here
@@ -97,13 +116,13 @@ app.get('/', (req, res) => {
 var loadMidiFileContent = function(socket, file) {
   console.log('Starting to load ' + file + '\'s midi content');
   fs.readFile(file, (err, content) => {
+    if(err) throw err;
     var arraybuffer = [];
     for(var c = 0; c < content.length; c++) {
       arraybuffer[c] = String.fromCharCode(content[c] & 255);
     }
     var data = arraybuffer.join('');
-    console.log(data);
-    socket.emit('file-parsed', data);
+    socket.emit('file-parsed', {content: data});
   });
 };
 
@@ -119,9 +138,9 @@ app.on('upload-completed', (file) => {
   delete pending_uploads[file.originalname];
 });
 
+//HANDLING SOCKET COMMUNICATION FROM HERE
 io.sockets.on('connection', (socket) => {
   var socket_address = socket.request.connection.remoteAddress;
-
   console.log('New connection at : ' + socket_address);
   /**
   ** Here, we check for a file that would have been uploaded from the same address
@@ -131,17 +150,19 @@ io.sockets.on('connection', (socket) => {
     var dir = completed_uploads[socket_address].dir;
     var file = completed_uploads[socket_address].name;
     loadMidiFileContent(socket, dir + '/' + file);
-    fs.unlink(dir + '/' + file);
+    fs.access(dir, fs.F_OK, (err) => {
+      if(err) throw err;
+      else fs.access(dir + '/' + file, fs.R_OK | fs.W_OK | fs.F_OK, (err) => {
+        if(err) console.log('could not find ' + dir + '/' + file);
+        else fs.unlink(dir + '/' + file);
+      });
+    });
   }
-
-  socket.on('clientException', (error) => {
-  	console.log(error.desc);
-  });
 
   //A client has selected a
   socket.on('midi-upload', (file) => { //here the user selected a file but did not submit
     if(file.type !== 'audio/midi') {
-      socket.emit('wrong-file-type', { err: 'The ' + file.type + ' file type is not supported', exp: 'Expected file type was : audio/midi file' });
+      socket.emit('wrong-file-type', {err: 'The ' + file.type + ' file type is not supported', exp: 'Expected file type was : audio/midi file'});
       return;
     }
     console.log('New pending upload : ' + file.name);
@@ -149,6 +170,10 @@ io.sockets.on('connection', (socket) => {
     setTimeout(() => {
       if(pending_uploads[file.name]) delete pending_uploads[file.name];
     }, ONE_MINUTE); //The upload will stay in a pending state for 60 seconds
+  });
+
+  socket.on('clientException', (error) => {
+  	console.log(error.desc);
   });
 
   socket.on('disconnect', (message) => {

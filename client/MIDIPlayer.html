@@ -431,7 +431,6 @@
 			else if (self.state === "up")
 				player.resume();
 		});
-
 		function timeFormatting(n) {
 			var minutes = n / 60 >> 0;
 			var seconds = String(n - (minutes * 60) >> 0);
@@ -452,16 +451,34 @@
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
-	var socket = io.connect('http://localhost:8080'); //insert server address here
 
-	$('#file').on('change', function(e) {
-			var files = e.target.files;
-			if(files.length > 0) //just sending a few information to the server so that it can properly send back the computed file
-				socket.emit('new-upload', {name: files[0].name});
+	var server_descriptor = {
+		address: 'http://localhost',
+		port: '8080'
+	};
+
+	var socket = io.connect(server_descriptor.address + ':' + server_descriptor.port); //insert server address here
+
+	$('#file').on('change', (event) => {
+			var files = event.target.files;
+			if(files.length > 0) {//just sending a few information to the server so that it can properly send back the computed file
+				socket.emit('midi-upload', {
+					name: files[0].name,
+					lastModified: files[0].lastModified,
+					type: files[0].type
+				}
+			);
+		}
 	});
 
 	socket.on('file_parsed', (content) => {
 		console.log('file parsing finished');
+		console.log(content);
+	});
+
+	socket.on('wrong-file-type', (content) => {
+		console.log(content.err);
+		console.log(content.exp);
 	});
 
 </script>

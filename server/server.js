@@ -8,8 +8,8 @@ var loader = require('./midi/file-loader.js')
 var app = express();
 var server = http.createServer(app);
 var io = require('socket.io').listen(server);
-var router = express.Router();
 
+const ONE_MINUTE = 60000;
 const SERVER_PORT = 8080;
 const API_MUSIC = '/uploads/music/';
 const VALID_UPLOAD_DIR = './uploads';
@@ -24,6 +24,7 @@ server.listen(SERVER_PORT, () => {
 });
 
 server.on('close', () => {
+  console.log('Shutting down server');
 });
 
 var delete_existing_dir_files = function(path) {
@@ -107,26 +108,12 @@ app.get('/', (req, res) => {
 	sendFile(res, path, type);
 })
 
-var delete_all_files_from_address = function(ip_address) {
-  var indices_to_slice = [];
-  for(var c = 0; c < pending_uploads.length; c++)
-    if(pending_uploads[c].remote_address === ip_address)
-      indices_to_slice.push(c);
-
-  if(indices_to_slice.length === 0)
-    return false;
-
-  for(var a = indices_to_slice.length - 1; a >= 0; a--)
-    pending_uploads.slice(indices_to_slice[a], 1);
-
-  return true;
-};
-
 app.on('upload-completed', (file) => {
   console.log('Finished uploading : ' + file.originalname);
-  var socket_address = pending_uploads[file.originalname];
+  var socket_address = pending_uploads[file.originalname].address;
   var socket = sockets_by_address[socket_address];
   var midiContent = loader.loadMidiFileContent(socket, VALID_UPLOAD_DIR + '/' + file.originalname);
+  //socket.emit('file-parsed', {content: midiContent});
 });
 
 io.sockets.on('connection', (socket) => {
@@ -138,10 +125,24 @@ io.sockets.on('connection', (socket) => {
   	console.log(error.desc);
   });
 
-  socket.on('new-upload', (file) => { //here the user selected a file but did not submit
+  socket.on('midi-upload', (file) => { //here the user selected a file but did not submit
     console.log('New pending upload : ' + file.name);
-    pending_uploads[file.name] = socket.request.connection.remoteAddress;
-    app.route(API_MUSIC).post(loader.startUpload(upload, socket, file.name));
+    if(file.type !== 'audio/midi') {
+      socket.emit('wrong-file-type', {
+          err: 'The ' + file.type + ' file type is not supported',
+          exp: 'Expected file type was : audio/midi file'
+        }
+      );
+      return;
+    }
+    pending_uploads[file.name] = {
+      address: socket.request.connection.remoteAddress,
+      lastModified: file.lastModified,
+      type: file.type
+    };
+    setTimeout(() => {
+      if(pending_uploads[file.name]) delete pending_uploads[file.name];
+    }, ONE_MINUTE); //The upload will stay in a pending state for 60 seconds
   });
 
   socket.on('disconnect', (message) => {

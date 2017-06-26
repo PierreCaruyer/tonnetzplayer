@@ -3,7 +3,7 @@ if (typeof MIDI.Player === 'undefined') MIDI.Player = {};
 (function() {
 
 var fs = require('fs');
-var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
+var XMLHttpRequest = require('xhr2');
 var Replayer = require('../inc/jasmid/replayer.js').Replayer;
 
 var midi = MIDI.Player;
@@ -30,38 +30,6 @@ exports.loadMidiFileContent = function(socket, file, onsuccess, onprogress, oner
     console.log(event);
 		onerror && onerror(event);
 	}*/
-};
-
-exports.startUpload = function(callback/*, socket, file, onsuccess, onprogress, onerror*/) {
-  return callback;
-  /*return function(req, res) {
-    /*var fetch = new XMLHttpRequest();
-  	fetch.open('GET', file);
-    console.log('loading ' + file);
-  	fetch.onreadystatechange = function() {
-  		if (this.readyState === 4) {
-  			if (this.status === 200) {
-  				var t = this.responseText || '';
-  				var ff = [];
-  				var mx = t.length;
-  				var scc = String.fromCharCode;
-  				for (var z = 0; z < mx; z++) {
-  					ff[z] = scc(t.charCodeAt(z) & 255);
-  				}
-
-  				var data = ff.join('');
-  				midi.currentData = data;
-  				midi.loadMidiFile(onsuccess, onprogress, onerror);
-  			} else {
-  				onerror && onerror('Unable to load MIDI file');
-  			}
-  		}
-      else
-        console.log('wrong state');
-  	};
-  	fetch.send();
-    return midi.data;
-  };*/
 };
 
 var MidiFile = function(data) {

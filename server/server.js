@@ -14,6 +14,7 @@ const SERVER_PORT = 8080;
 const API_MUSIC = '/uploads/music/'; //Must match with the action field of the client's form
 const VALID_UPLOAD_DIR = './uploads';
 const INVALID_UPLOAD_DIR = './invalid-uploads';
+const PUBLIC_DIRECTORY = './public/';
 const UPLOAD_FIELDNAME = 'music-upload'; //Must match with the name field of the file input in the client's form
 
 var pending_uploads = {},
@@ -62,13 +63,6 @@ var upload = multer({
   inMemory: true,
 }).single(UPLOAD_FIELDNAME);
 
-var sendFile = function(res, path, type) {
-  fs.readFile('./client' + path, 'utf-8', (error, content) => {
-			res.writeHead(200, {"Content-Type": type});
-			res.end(content);
-	});
-};
-
 var restore_filename = function(file) {
   var dest = file.destination,
       correct_name = file.originalname,
@@ -91,11 +85,8 @@ var poke_upload_dirs = function() {
   poke_dir(INVALID_UPLOAD_DIR);
 };
 
-//Sending the .css, .js ... files with express here
-app.get('/', (req, res) => {
-	sendFile(res, '/MIDIPlayer.html', 'text/html');
-})
-.post(API_MUSIC, (req,res) => {
+//Doing some routing here
+app.post(API_MUSIC, (req,res) => {
     upload(req,res,function(err) {
       if(err) {
         return res.status(500).end("Error occured while uploading file");
@@ -108,21 +99,32 @@ app.get('/', (req, res) => {
     });
 })
 .use((req, res, next) => { //default
+  var options = {
+    root: PUBLIC_DIRECTORY,
+    dotfiles: 'deny',
+    headers: {
+      'x-timestamp': Date.now(),
+      'x-sent': true
+    }
+  };
+
 	var path = url.parse(req.url).pathname;
-	var type = mime.lookup(path);
-	sendFile(res, path, type);
+  res.sendFile(path, options, (err) => {
+    if(err) next(err);
+  });
 })
 
-var loadMidiFileContent = function(socket, file) {
+var loadMidiFileContent = function(socket, dir, file) {
   console.log('Starting to load ' + file + '\'s midi content');
-  fs.readFile(file, (err, content) => {
+  fs.readFile(dir + file, (err, content) => {
     if(err) throw err;
     var arraybuffer = [];
     for(var c = 0; c < content.length; c++) {
       arraybuffer[c] = String.fromCharCode(content[c] & 255);
     }
     var data = arraybuffer.join('');
-    socket.emit('file-parsed', {content: data});
+    socket.emit('file-parsed', {midi: data});
+    console.log('Sent ' + file + '\'s midi content to ' + socket.request.connection.remoteAddress);
   });
 };
 
@@ -142,6 +144,7 @@ app.on('upload-completed', (file) => {
 io.sockets.on('connection', (socket) => {
   var socket_address = socket.request.connection.remoteAddress;
   console.log('New connection at : ' + socket_address);
+
   /**
   ** Here, we check for a file that would have been uploaded from the same address
   ** as the socket that has just connected to the server
@@ -149,7 +152,7 @@ io.sockets.on('connection', (socket) => {
   if(completed_uploads[socket_address]) {
     var dir = completed_uploads[socket_address].dir;
     var file = completed_uploads[socket_address].name;
-    loadMidiFileContent(socket, dir + '/' + file);
+    loadMidiFileContent(socket, dir + '/', file);
     fs.access(dir, fs.F_OK, (err) => {
       if(err) throw err;
       else fs.access(dir + '/' + file, fs.R_OK | fs.W_OK | fs.F_OK, (err) => {

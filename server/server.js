@@ -91,10 +91,14 @@ app.post(API_MUSIC, (req,res) => {
       if(err) {
         return res.status(500).end("Error occured while uploading file");
       } else if(req.file) {
+        /**
+         * The file is uploaded with a randomized name by the multer
+         * Here we give it back its true name so that it is easier to find it back when needed
+         **/
         restore_filename(req.file);
         app.emit('upload-completed', req.file);
       }
-      //Here the client's page refreshes after the upload is done
+        //Here the client's page refreshes after the upload is done
       res.redirect('back');
     });
 })
@@ -170,7 +174,7 @@ io.sockets.on('connection', (socket) => {
         });
     });
     /**
-     * The completed_uploads contain one-time-usage strcutures
+     * The completed_uploads structure contains one-time-usage strcutures
      * once it's been used, we just delete it.
      */
     delete completed_uploads[socket_address];

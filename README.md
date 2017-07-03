@@ -1,6 +1,6 @@
 NPM DEPENDANCIES:
 
 npm install :
-  -express
-  -socket.io
-  -multer
+  <br>-express</br>
+  <br>-socket.io</br>
+  <br>-multer</br>

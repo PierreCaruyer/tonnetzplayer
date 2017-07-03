@@ -165,7 +165,6 @@ midi.loadMidiFile = function(file, onsuccess, onprogress, onerror) {
 
 var updateDisplay = function(skip) {
   var event = timeline[currentPos];
-	console.log(JSON.stringify(event, undefined, 2));
 	tonnetz.wipe();
   if(skip) {
     tonnetz.wipe();
@@ -304,7 +303,7 @@ var setupTimeline = function() {
 };
 
 var scheduleDisplay = function(channel, note, message, index) {
-	if (message === 128) {
+	if (message === 128) { //noteOff
 		var indeces = find_note_index(array, channel ,note);
 		var notes = [];
 		for(var n = 0; n < indeces.length; n++) {
@@ -315,7 +314,7 @@ var scheduleDisplay = function(channel, note, message, index) {
 			timeline[index].notes.push(array[c]);
 		for(var a = 0; a < notes.length; a++)
 			timeline[index].off_notes.push(notes[a]);
-	} else {
+	} else { //noteOn
 		array.push({ channel: channel, pitch: note });
 		for(var c = 0; c < array.length; c++)
 			timeline[index].notes.push(array[c]);

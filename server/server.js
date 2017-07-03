@@ -2,7 +2,6 @@ var http = require('http');
 var fs = require('fs');
 var express = require('express');
 var url = require('url');
-var mime = require('mime');
 var multer = require('multer');
 
 var app = express();

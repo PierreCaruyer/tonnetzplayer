@@ -17,7 +17,7 @@ $(function(){
   midi.init();
   keyboard.init('piano');
 
-  $('#tonnetz').mousewheel(function(event) {
+  $('#tonnetz').mousewheel((event) => {
     tonnetz.setDensity(tonnetz.density - event.deltaY);
     return false;
   });
@@ -35,7 +35,7 @@ $(function(){
     }
 	};
 
-  $(window).keypress(function(event) {
+  $(window).keypress((event) => {
     if (somethingHasFocus()) return;
 
     var c = String.fromCharCode(event.which);
@@ -49,35 +49,23 @@ $(function(){
       MIDI.Player.stepBack();
     else if(event.which === 32) // space pressed
       pausePlayStop();
-    else if(event.which === 13)// enter pressed
+    else if(event.which === 16) // enter pressed
       MIDI.Player.stepForward();
   });
 
-  document.querySelector('#file').addEventListener('change', function(e){
-		try {
-			var files = e.target.files;
-			if(files.length > 0)
-			   MIDI.Player.loadFile(files[0].name, MIDI.Player.start);
-		} catch (e) {
-			console.log(e);
-		} finally {
-
-		}
-	});
-
-  $('#navbar a[data-toggle="tab"]').on('shown.bs.tab', function() {
+  $('#navbar a[data-toggle="tab"]').on('shown.bs.tab', () => {
     if ($(this).attr('href') != "#")
       $('#tabs').collapse('show');
       collapseNav();
   });
 
-  $('#navbar a[data-toggle="tab"]').click(function() {
+  $('#navbar a[data-toggle="tab"]').click(() => {
     if ($(this).parent().hasClass('active')) {
       $('#tabs').collapse('hide');
     }
   });
 
-  $('.tab-link').click(function(event) {
+  $('.tab-link').click((event) => {
     event.preventDefault();
     var href = $(this).attr('href');
     $('#navbar a[data-toggle="tab"][href="' + href + '"]').tab('show');
@@ -85,32 +73,35 @@ $(function(){
 
   $('#tabs').on('hidden.bs.collapse', noTab);
   $('#tonnetz').click(collapseNavAndTabs);
-  $('.navbar-brand').click(function(event) {
+  $('.navbar-brand').click((event) => {
     event.preventDefault();
     collapseNavAndTabs();
   });
 
-  $('#panic').click(function() { tonnetz.panic(); });
-  $('#enable-sustain').click(function() { tonnetz.toggleSustainEnabled(); });
-  $('#show-note-names').click(function() { $(noteLabels).toggle(); });
-  $('#show-triad-names').click(function() { $(triadLabels).toggle(); });
-  $('#backtrack-step').on('input change propertychange paste', function() {
-    MIDI.Player.setBackTrackStep($(this).val());
+  $('#panic').click(() => { tonnetz.panic(); });
+  $('#enable-sustain').click(() => { tonnetz.toggleSustainEnabled(); });
+  $('#show-note-names').click(() => { $(noteLabels).toggle(); });
+  $('#show-triad-names').click(() => { $(triadLabels).toggle(); });
+  $('#backtrack-step').on('input change propertychange paste', () => {
+    var step = document.getElementById('backtrack-step').value;
+    MIDI.Player.setBackTrackStep(step);
   });
-  $('#bpm-picker').on('input change propertychange paste', function() {
-    MIDI.Player.onbpmchange($(this).val());
+  $('#bpm-picker').on('input change propertychange paste', () => {
+    var bpm = document.getElementById('bpm-picker').value;
+    MIDI.Player.onbpmchange(bpm);
   });
-  $('#ghost-duration').on('input change propertychange paste', function() {
-    if(!tonnetz.setGhostDuration($(this).val())) {
+  $('#ghost-duration').on('input change propertychange paste', () => {
+    var duration = document.getElementById('ghost-duration').value;
+    if(!tonnetz.setGhostDuration(duration)) {
       $(this).closest('.form-group').addClass('has-error');
     } else {
       $(this).closest('.form-group').removeClass('has-error');
     }
   });
-  $('input[type=radio][name=layout]').change(function() {
+  $('input[type=radio][name=layout]').change(() => {
     tonnetz.setLayout($(this).val());
   });
-  $('input[type=radio][name=kbd-layout]').change(function() {
+  $('input[type=radio][name=kbd-layout]').change(() => {
     keyboard.layout = $(this).val();
     tonnetz.panic();
   });
@@ -118,13 +109,13 @@ $(function(){
   $('[data-toggle="tooltip"]').tooltip();
 
   // Open links with data-popup="true" in a new window.
-  $('body').on('click', 'a[data-popup]', function(event) {
+  $('body').on('click', 'a[data-popup]', (event) => {
     window.open($(this)[0].href);
     event.preventDefault();
   });
 
   // Generate mailto: link
-  $('a[href="mailto:"]').attr('href', (function() {
+  $('a[href="mailto:"]').attr('href', (() => {
     var addr = '';
     var i = 0;
     do {
@@ -136,7 +127,7 @@ $(function(){
 
 function collapseNav() {
   if($('.navbar-toggle').is(':visible') && $('.navbar-collapse').hasClass('in')) {
-    $('.navbar-toggle').click();
+    //$('.navbar-toggle').click();
   }
 }
 

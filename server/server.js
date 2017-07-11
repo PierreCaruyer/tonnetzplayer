@@ -42,7 +42,11 @@ var delete_uploaded_files = function() {
 
 var delete_dir_files = function(dir) {
   fs.access(dir, fs.F_OK, (err) => {
-    if(err) throw err;
+    if(err) {
+      fs.mkdir(dir, (error) => {
+        throw err;
+      });
+    }
     fs.readdir(dir, (err, files) => {
       for(var n = 0; n < files.length; n++) {
         fs.unlink(dir + '/' + files[n]);
@@ -187,9 +191,12 @@ io.sockets.on('connection', (socket) => {
     console.log('New pending upload : ' + file.name);
     pending_uploads[file.name] = socket.request.connection.remoteAddress;
     setTimeout(() => {
-      if(pending_uploads[file.name]) delete pending_uploads[file.name];
-    }, ONE_MINUTE); //The upload will stay in a pending state for 60 seconds
-  });               //just in case client connection drops while refreshing the page
+      if(pending_uploads[file.name]) {
+        delete pending_uploads[file.name];
+        socket.emit('pending-upload-deleted', 'You were iddle for too long, your upload got deleted, please retry');
+      }
+    }, 20 * ONE_MINUTE); //The upload will stay in a pending state for 20 minutes
+  });                    //just in case client connection drops while refreshing the page
 
   socket.on('clientException', (error) => {
   	console.log(error.desc);

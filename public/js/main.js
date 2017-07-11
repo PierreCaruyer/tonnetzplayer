@@ -83,13 +83,16 @@ $(function(){
   $('#show-note-names').click(() => { $(noteLabels).toggle(); });
   $('#show-triad-names').click(() => { $(triadLabels).toggle(); });
   $('#backtrack-step').on('input change propertychange paste', () => {
-    MIDI.Player.setBackTrackStep($(this).val());
+    var step = document.getElementById('backtrack-step').value;
+    MIDI.Player.setBackTrackStep(step);
   });
   $('#bpm-picker').on('input change propertychange paste', () => {
-    MIDI.Player.onbpmchange($(this).val());
+    var bpm = document.getElementById('bpm-picker').value;
+    MIDI.Player.onbpmchange(bpm);
   });
   $('#ghost-duration').on('input change propertychange paste', () => {
-    if(!tonnetz.setGhostDuration($(this).val())) {
+    var duration = document.getElementById('ghost-duration').value;
+    if(!tonnetz.setGhostDuration(duration)) {
       $(this).closest('.form-group').addClass('has-error');
     } else {
       $(this).closest('.form-group').removeClass('has-error');
@@ -106,7 +109,7 @@ $(function(){
   $('[data-toggle="tooltip"]').tooltip();
 
   // Open links with data-popup="true" in a new window.
-  $('body').on('click', 'a[data-popup]', function(event) {
+  $('body').on('click', 'a[data-popup]', (event) => {
     window.open($(this)[0].href);
     event.preventDefault();
   });

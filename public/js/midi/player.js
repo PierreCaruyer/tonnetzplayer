@@ -62,13 +62,15 @@ midi.clearAnimation = function() {
 };
 
 midi.onbpmchange = function(step) {
-  var typeofstep = typeof(step);
-  if(typeofstep === 'string')
-    midi.jumpStep = parseInt(step);
-  else if(typeofstep === 'number')
-    midi.jumpStep = step;
-  else
+  if(typeof(step) === 'string') {
+    midi.BPM = parseInt(step);
+	}
+  else if(typeof(step) === 'number') {
+    midi.BPM = step;
+	}
+  else {
     midi.BPM = 120;
+	}
   midi.stop();
   resetTimeline();
   midi.loadMidiFile(midi.currentData, midi.onsuccess, midi.onprogress, midi.onfailure);

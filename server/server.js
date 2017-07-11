@@ -21,6 +21,7 @@ var pending_uploads = {},
 
 server.listen(SERVER_PORT, () => {
   console.log('Server started to listen on port : ' + SERVER_PORT);
+  poke_upload_dirs();
 });
 
 server.on('close', () => {
@@ -90,20 +91,21 @@ var poke_upload_dirs = function() {
 
 //Doing some routing here
 app.post(API_MUSIC, (req,res) => {
-    upload(req,res,function(err) {
-      if(err) {
-        return res.status(500).end("Error occured while uploading file");
-      } else if(req.file) {
-        /**
-         * The file is uploaded with a randomized name by the multer
-         * Here we give it back its true name so that it is easier to find it back when needed
-         **/
-        restore_filename(req.file);
-        app.emit('upload-completed', req.file);
-      }
-        //Here the client's page refreshes after the upload is done
-      res.redirect('back');
-    });
+  poke_upload_dirs();
+  upload(req,res,function(err) {
+    if(err) {
+      return res.status(500).end("Error occured while uploading file");
+    } else if(req.file) {
+      /**
+       * The file is uploaded with a randomized name by the multer
+       * Here we give it back its true name so that it is easier to find it back when needed
+       **/
+      restore_filename(req.file);
+      app.emit('upload-completed', req.file);
+    }
+      //Here the client's page refreshes after the upload is done
+    res.redirect('back');
+  });
 })
 .use((req, res, next) => { //default
   var options = {
@@ -165,7 +167,7 @@ io.sockets.on('connection', (socket) => {
     var file = completed_uploads[socket_address].name;
     
     fs.access(dir, fs.F_OK, (err) => {
-      if(err) throw err;
+      if(err) fs.mkdir(dir);
       else 
         fs.access(dir + '/' + file, fs.R_OK | fs.W_OK | fs.F_OK, (err) => {
           if(err)
@@ -189,6 +191,7 @@ io.sockets.on('connection', (socket) => {
       return;
     }
     console.log('New pending upload : ' + file.name);
+    poke_upload_dirs();
     pending_uploads[file.name] = socket.request.connection.remoteAddress;
     setTimeout(() => {
       if(pending_uploads[file.name]) {

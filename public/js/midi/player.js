@@ -59,7 +59,6 @@ midi.onbpmchange = function(step) {
 	} else if(typeof(step) === 'number') {
     midi.BPM = step;
 	} else {
-    midi.BPM = 120;
 	}
   midi.stop();
   resetTimeline();
@@ -132,8 +131,9 @@ midi.setAnimation = function(callback) {
 	requestAnimationFrame(frame);
 };
 
-midi.loadMidiFile = function(onsuccess, onprogress, onerror) {
+midi.loadMidiFile = function(file, onsuccess, onprogress, onerror) {
 	try {
+    midi.currentData = file;
     midi.onsuccess = onsuccess;
     midi.onprogress = onprogress;
     midi.onerror = onerror;
@@ -153,42 +153,6 @@ midi.loadMidiFile = function(onsuccess, onprogress, onerror) {
     console.log(event);
 		onerror && onerror(event);
 	}
-};
-
-midi.loadFile = function(file, onsuccess, onprogress, onerror) {
-  midi.file = file;
-  midi.onsuccess = onsuccess;
-  midi.onprogress = onprogress;
-  midi.onfailure = onerror;
-	if (file.indexOf('base64,') !== -1) {
-		var data = window.atob(file.split(',')[1]);
-		midi.currentData = data;
-		midi.loadMidiFile(onsuccess, onprogress, onerror);
-	} else {
-    var fetch = new XMLHttpRequest();
-		fetch.open('GET', file);
-		fetch.overrideMimeType('text/plain; charset=x-user-defined');
-		fetch.onreadystatechange = function() {
-			if (this.readyState === 4) {
-				if (this.status === 200) {
-					var t = this.responseText || '';
-					var ff = [];
-					var mx = t.length;
-					var scc = String.fromCharCode;
-					for (var z = 0; z < mx; z++) {
-						ff[z] = scc(t.charCodeAt(z) & 255);
-					}
-					var data = ff.join('');
-					midi.currentData = data;
-					midi.loadMidiFile(onsuccess, onprogress, onerror);
-				} else {
-					onerror && onerror('Unable to load MIDI file');
-				}
-			}
-		};
-		fetch.send();
-	}
-  return midi.data;
 };
 
 var updateDisplay = function(skip) {

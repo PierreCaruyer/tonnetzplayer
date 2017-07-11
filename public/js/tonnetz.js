@@ -12,12 +12,13 @@ var tonnetz = (function() {
   var LAYOUT_RIEMANN = 'riemann',
       LAYOUT_SONOME = 'sonome';
 
+
   var W,  // width
       H,  // height
       u;  // unit distance (distance between neighbors)
 
   module.density = 22;
-  module.ghostDuration = 0;
+  module.ghostDuration = 500;
   module.layout = LAYOUT_RIEMANN;
 
   var toneGrid = [];
@@ -57,8 +58,7 @@ var tonnetz = (function() {
     window.onresize = function() { module.rebuild(); };
   };
 
-
-  module.noteOn = function(c, pitch, skip) {
+  module.noteOn = function(c, pitch) {
     if (!(pitch in channels[c].pitches)) {
       var i = pitch%12;
       tones[i].state = STATE_ON;
@@ -77,7 +77,7 @@ var tonnetz = (function() {
     this.draw();
   };
 
-  module.noteOff = function(c, pitch, skip) {
+  module.noteOff = function(c, pitch) {
     if (pitch in channels[c].pitches) {
       var i = pitch%12;
       delete channels[c].pitches[pitch];
@@ -150,7 +150,6 @@ var tonnetz = (function() {
     }
   };
 
-
   module.toggleSustainEnabled = function() {
     sustainEnabled = !sustainEnabled;
   };
@@ -192,7 +191,6 @@ var tonnetz = (function() {
       tone.state = STATE_OFF;
     }
   };
-
 
   var ghostsInterval = null;
 

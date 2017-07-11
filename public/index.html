@@ -6,33 +6,29 @@
 	<!-- midi.js css -->
 	<link href="./css/MIDIPlayer.css" rel="stylesheet" type="text/css" />
 	<!-- shim -->
-	<script src="./inc/shim/Base64.js" type="text/javascript"></script>
-	<script src="./inc/shim/Base64binary.js" type="text/javascript"></script>
-	<script src="./inc/shim/WebAudioAPI.js" type="text/javascript"></script>
-	<script src="./inc/shim/WebMIDIAPI.js" type="text/javascript"></script>
-	<!-- jasmid package -->
-	<script src="./inc/jasmid/stream.js"></script>
-	<script src="./inc/jasmid/midifile.js"></script>
-	<script src="./inc/jasmid/replayer.js"></script>
-	<!-- midi.js package -->
-	<script src="./js/midi/audioDetect.js" type="text/javascript"></script>
-	<script src="./js/midi/gm.js" type="text/javascript"></script>
-	<script src="./js/midi/loader.js" type="text/javascript"></script>
-	<script src="./js/midi/plugin.audiotag.js" type="text/javascript"></script>
-	<script src="./js/midi/plugin.webaudio.js" type="text/javascript"></script>
-	<script src="./js/midi/plugin.webmidi.js" type="text/javascript"></script>
-	<script src="./js/midi/player.js" type="text/javascript"></script>
-	<script src="./js/midi/synesthesia.js" type="text/javascript"></script>
+	<script type="text/javascript" src="inc/shim/Base64.js"></script>
+	<script type="text/javascript" src="inc/shim/Base64binary.js"></script>
+	<script type="text/javascript" src="inc/shim/WebAudioAPI.js"></script>
+	<script type="text/javascript" src="inc/shim/WebMIDIAPI.js"></script>
+	<script type="text/javascript" src="inc/jasmid/midifile.js"></script>
+	<script type="text/javascript" src="inc/jasmid/replayer.js"></script>
+	<script type="text/javascript" src="inc/jasmid/stream.js"></script>
 	<!-- utils -->
-	<script src="./js/util/dom_request_xhr.js" type="text/javascript"></script>
-	<script src="./js/util/dom_request_script.js" type="text/javascript"></script>
+		<script src="../js/util/dom_request_xhr.js" type="text/javascript"></script>
+		<script src="../js/util/dom_request_script.js" type="text/javascript"></script>
+	<!-- midi.js package -->
+	<script type="text/javascript" src="js/midi/audioDetect.js"></script>
+	<script type="text/javascript" src="js/midi/gm.js"></script>
+	<script type="text/javascript" src="js/midi/loader.js"></script>
+	<script type="text/javascript" src="js/midi/plugin.audiotag.js"></script>
+	<script type="text/javascript" src="js/midi/plugin.webaudio.js"></script>
+	<script type="text/javascript" src="js/midi/plugin.webmidi.js"></script>
+	<script type="text/javascript" src="js/midi/player.js"></script>
+	<script type="text/javascript" src="js/midi/synesthesia.js"></script>
 	<!-- includes -->
-	<script src="./inc/timer.js" type="text/javascript"></script>
-	<script src="./inc/colorspace.js" type="text/javascript"></script>
-	<script src="./inc/event.js" type="text/javascript"></script>
-	<link href="css/bootstrap.min.css" rel="stylesheet">
-	<link href="css/font-awesome.min.css" rel="stylesheet">
-	<link href="css/style.css" rel="stylesheet">
+	<script type="text/javascript" src="inc/timer.js"></script>
+	<script type="text/javascript" src="inc/colorspace.js" ></script>
+	<script type="text/javascript" src="inc/event.js"></script>
 
 	<script type="text/javascript" src="js/jquery.min.js"></script>
 	<script type="text/javascript" src="js/jquery.mousewheel.min.js"></script>
@@ -49,10 +45,12 @@
 	<script type="text/javascript" src="color-schemes/default.js"></script>
 	<script type="text/javascript" src="color-schemes/greenonblack.js"></script>
 	<script type="text/javascript" src="color-schemes/apollo.js"></script>
-	<script type="text/javascript" src="js/require.js"></script>
-	<script type="text/javascript" src="js/midi.file.handler.js"></script>
 
 	<script type="text/javascript" src="js/main.js"></script>
+
+	<link href="css/bootstrap.min.css" rel="stylesheet">
+	<link href="css/font-awesome.min.css" rel="stylesheet">
+	<link href="css/style.css" rel="stylesheet">
 </head>
 <body>
 
@@ -371,7 +369,10 @@
     </div>
 
 	<div style="margin: 0 auto; width: 300px; float: right;" id="pause">
-		<input type="file" id="file" accept="audio/mid">
+		<form method="post" enctype="multipart/form-data" action="/uploads/music/" id=fileForm>
+			<input type="file" id="file" accept="audio/mid" name="music-upload">
+			<input type="submit" id="fileSubmit" value="Submit">
+		</form>
 	</div>
 
 <script type="text/javascript">
@@ -392,7 +393,7 @@
 		}
 	};
 
-	eventjs.add(window, "load", function(event) {
+	eventjs.add(window, "load", (event) => {
 		var link = document.createElement("link");
 		link.href = "//fonts.googleapis.com/css?family=Oswald";
 		link.ref = "stylesheet";
@@ -422,25 +423,23 @@
 		var time2 = document.getElementById("time2");
 		var capsule = document.getElementById("capsule");
 		var timeCursor = document.getElementById("cursor");
-		eventjs.add(capsule, "drag", function(event, self) {
+		eventjs.add(capsule, "drag", (event, self) => {
 			eventjs.cancel(event);
 			player.currentTime = (self.x) / 420 * player.endTime;
 			if (player.currentTime < 0) player.currentTime = 0;
 			if (player.currentTime > player.endTime) player.currentTime = player.endTime;
-			if (self.state === "down") {
+			if (self.state === "down")
 				player.pause(true);
-			} else if (self.state === "up") {
+			else if (self.state === "up")
 				player.resume();
-			}
 		});
-		//
 		function timeFormatting(n) {
 			var minutes = n / 60 >> 0;
 			var seconds = String(n - (minutes * 60) >> 0);
 			if (seconds.length == 1) seconds = "0" + seconds;
 			return minutes + ":" + seconds;
 		};
-		player.setAnimation(function(data, element) {
+		player.setAnimation((data, element) => {
 			var percent = data.now / data.end;
 			var now = data.now >> 0; // where we are now
 			var end = data.end >> 0; // end of song
@@ -450,16 +449,35 @@
 		});
 	};
 	var player;
+</script>
 
-	document.querySelector('#file').addEventListener('change', function(e){
-    try {
-      var files = e.target.files;
-      if(files.length > 0) {
-         MIDI.Player.loadFile(files[0].name, MIDI.Player.start);
-       }
-    } catch (e) {
-      console.log(e);
-    } finally {	}
+<script src="/socket.io/socket.io.js"></script>
+<script>
+
+  var server_descriptor = {
+    address: 'http://localhost',
+    port: '8080'
+  };
+
+	var socket = io.connect(server_descriptor.address + ':' + server_descriptor.port); //insert server address here
+
+	$('#file').on('change', (event) => {
+			var files = event.target.files;
+			if(files.length > 0) //just sending a few information to the server so that it can properly send back the computed file
+				socket.emit('midi-upload', {name: files[0].name, type: files[0].type});
+	});
+
+	socket.on('file-parsed', (data) => {
+		MIDI.Player.loadMidiFile(data.midi, MIDI.Player.start);
+	});
+
+	socket.on('wrong-file-type', (content) => {
+		console.log(content.err);
+		console.log(content.exp);
+	});
+
+  socket.on('pending-upload-deleted', (message) => {
+    
   });
 
 </script>

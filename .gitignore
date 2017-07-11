@@ -1,3 +1,4 @@
-rendu.odt
 *.mid
-server.js
+node_modules/
+uploads/
+invalid_uploads/

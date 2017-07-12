@@ -1,12 +1,12 @@
-<br><h2>Requirements</h2></br>
-&nbsp;&nbsp;nodejs
+<h2>Requirements</h2>
+nodejs
 
-&nbsp;&nbsp;<h3>NPM DEPENDANCIES:</h3>
+&nbsp;&nbsp;<h3>npm dependancies:</h3>
 
-&nbsp;&nbsp;&nbsp;&nbsp;npm install :
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>-express</br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>-socket.io</br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>-multer</br>
+npm install :
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>-express</br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>-socket.io</br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>-multer</br>
 
 <h2>Branch compatibility with browsers :</h2>
 
@@ -32,3 +32,14 @@
 		<td>No</td>
 	</tr>
 </table>
+
+<h2>Starting the server</h2>
+
+<h4>Two options exist to start the server fom command line :</h4>
+<br><strong>-nodejs server/server.js</strong></br>
+<br><strong>-start_server.sh</strong></br>
+
+<h2>Connecting to the server</h2>
+
+
+Enter <a href="localhost:8080">localhost:8080</a> in your browser.

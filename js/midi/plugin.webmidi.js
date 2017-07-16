@@ -12,6 +12,7 @@
 	var output = null;
 	var channels = [];
 	var midi = root.WebMIDI = {api: 'webmidi'};
+	
 	midi.send = function(data, delay) { // set channel volume
 		output.send(data, delay * 1000);
 	};

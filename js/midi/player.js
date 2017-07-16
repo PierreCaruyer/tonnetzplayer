@@ -63,7 +63,7 @@ midi.onbpmchange = function(step) {
 	}
   midi.stop();
   resetTimeline();
-  midi.loadMidiFile(midi.currentData, midi.onsuccess, midi.onprogress, midi.onfailure);
+  midi.loadFile(midi.file, midi.onsuccess, midi.onprogress, midi.onfailure);
 };
 
 var resetTimeline = function() {
@@ -188,7 +188,6 @@ midi.loadFile = function(file, onsuccess, onprogress, onerror) {
 		};
 		fetch.send();
 	}
-  return midi.data;
 };
 
 var updateDisplay = function(skip) {

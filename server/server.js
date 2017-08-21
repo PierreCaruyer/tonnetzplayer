@@ -9,7 +9,7 @@ var server = http.createServer(app);
 var io = require('socket.io').listen(server);
 
 const ONE_MINUTE = 60000;
-const SERVER_PORT = 8080;
+const SERVER_PORT = 3000;
 const API_MUSIC = '/uploads/music/'; //Must match with the action field of the client's form
 const VALID_UPLOAD_DIR = './uploads';
 const INVALID_UPLOAD_DIR = './invalid-uploads';
@@ -31,8 +31,7 @@ server.on('close', () => {
 
 var delete_existing_dir_files = function(path) {
   fs.access(path, fs.F_OK, (err) => {
-    if(err) throw err;
-    delete_dir_files(path);
+    if(!err) delete_dir_files(path);
   });
 };
 
@@ -89,7 +88,7 @@ var poke_upload_dirs = function() {
   poke_dir(INVALID_UPLOAD_DIR);
 };
 
-//Doing some routing here
+//ROUTING
 app.post(API_MUSIC, (req,res) => {
   poke_upload_dirs();
   upload(req,res,function(err) {
@@ -103,7 +102,7 @@ app.post(API_MUSIC, (req,res) => {
       restore_filename(req.file);
       app.emit('upload-completed', req.file);
     }
-      //Here the client's page refreshes after the upload is done
+    //Here the client's page refreshes after the upload is done
     res.redirect('back');
   });
 })
@@ -122,6 +121,7 @@ app.post(API_MUSIC, (req,res) => {
     if(err) next(err);
   });
 })
+//END ROUTING
 
 var loadMidiFileContent = function(socket, dir, file) {
   console.log('Starting to load ' + file + '\'s midi content');
@@ -133,7 +133,6 @@ var loadMidiFileContent = function(socket, dir, file) {
     }
     var data = arraybuffer.join('');
     socket.emit('file-parsed', {midi: data, name: file});
-    console.log('Sent ' + file + '\'s midi content to ' + socket.request.connection.remoteAddress);
   });
 };
 
@@ -155,20 +154,19 @@ io.sockets.on('connection', (socket) => {
   console.log('New connection at : ' + socket_address);
 
   /**
-   * When a socket connects to the server, it could be a socket
-   * that has just finished uploading via a POST request and which
-   * client page has been refreshed.
-   * That's why we check for a file linked to this socket address
-   * If such a file is found, the midi content if this file is extracted
-   * and sent to the socket. Then the file is deleted from the server.
+   * Right after a new socket connects to the server, the socket address is checked,
+   * if it is found in the completed_uploads register, it means the client is reconnecting
+   * to the server (because of the web browser refreshing after the POST request) after having uploaded its file to the server.
+   * The content of the file is then computed to be sent as a string containing the midi data.
   **/
   if(completed_uploads[socket_address]) {
     var dir = completed_uploads[socket_address].dir;
     var file = completed_uploads[socket_address].name;
     
     fs.access(dir, fs.F_OK, (err) => {
-      if(err) fs.mkdir(dir);
-      else 
+      if(err) {
+        fs.mkdir(dir);
+      } else {
         fs.access(dir + '/' + file, fs.R_OK | fs.W_OK | fs.F_OK, (err) => {
           if(err)
             console.log('could not find ' + dir + '/' + file);
@@ -177,17 +175,20 @@ io.sockets.on('connection', (socket) => {
             fs.unlink(dir + '/' + file); //deleting the uploaded file to free up some space on the server's hard disk
           }
         });
+      }
     });
     /**
      * The completed_uploads structure contains one-time-usage strcutures
-     * once it's been used, we just delete it.
+     * once it's been used, it is deleted.
      */
     delete completed_uploads[socket_address];
   }
 
   socket.on('midi-upload', (file) => { //here the user selected a file but did not submit yet
     if(file.type !== 'audio/midi') {
-      socket.emit('wrong-file-type', {err: 'The ' + file.type + ' file type is not supported', exp: 'Expected file type was : audio/midi file'});
+      var error_message = 'The ' + file.type + ' file type is not supported',
+          expectation_message = 'Expected file type was : audio/midi file';
+      socket.emit('wrong-file-type', {err: error_message, exp: expectation_message});
       return;
     }
     console.log('New pending upload : ' + file.name);
@@ -199,10 +200,10 @@ io.sockets.on('connection', (socket) => {
         socket.emit('pending-upload-deleted', 'You were iddle for too long, your upload got deleted, please retry');
       }
     }, 20 * ONE_MINUTE); //The upload will stay in a pending state for 20 minutes
-  });                    //just in case client connection drops while refreshing the page
+  });                    //to prevent keeping the uploaded information in memory for too long.
 
   socket.on('clientException', (error) => {
-  	console.log(error.desc);
+  	console.log('Client ' +  + error.desc);
   });
 
   socket.on('disconnect', (message) => {

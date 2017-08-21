@@ -4,9 +4,9 @@ nodejs
 &nbsp;&nbsp;<h3>npm dependancies:</h3>
 
 npm install :
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>-express</br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>-socket.io</br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>-multer</br>
+<br>-express</br>
+<br>-socket.io</br>
+<br>-multer</br>
 
 <h2>Branch compatibility with browsers :</h2>
 
@@ -42,4 +42,4 @@ npm install :
 <h2>Connecting to the server</h2>
 
 
-Enter <a href="localhost:8080">localhost:8080</a> in your browser.
+Enter <a href="localhost:3000">localhost:3000</a> in your browser.

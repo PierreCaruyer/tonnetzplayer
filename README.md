@@ -1,4 +1,4 @@
-<h3>Dependancies </h3>
+<h2>Dependancies </h2>
 * nodejs
 	* npm
 		* express
@@ -7,7 +7,7 @@
 
 <h5>NB : These npm dependancies can be easily fixed by using npm install</h5>
 
-<h2>Branch compatibility with browsers :</h3>
+<h2>Branch compatibility with browsers :</h2>
 
 <table>
 	<tr>
@@ -36,13 +36,13 @@
 <h5>NB : Here the master branch is only a merge from the server branch</h5>
 
 
-<h3>Starting the server</h3>
+<h2>Starting the server</h2>
 
 * Two options exist to start the server fom command line :
 	* nodejs server/server.js
 	* ./server.sh
 
-<h3>Connecting to the server</h3>
+<h2>Connecting to the server</h2>
 
 
 Enter <a href="localhost:3000">localhost:3000</a> in your browser.

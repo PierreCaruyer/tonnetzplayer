@@ -1,12 +1,16 @@
 <h2>Requirements</h2>
 nodejs
 
-&nbsp;&nbsp;<h3>npm dependancies:</h3>
+<h3>npm dependancies:</h3>
 
-npm install :
-<br>-express</br>
-<br>-socket.io</br>
-<br>-multer</br>
+<ul>
+<li>npm install :</li>
+<ul>
+<li><br>-express</br></li>
+<li><br>-socket.io</br></li>
+<li><br>-multer</br></li>
+</ul>
+</ul>
 
 <h2>Branch compatibility with browsers :</h2>
 

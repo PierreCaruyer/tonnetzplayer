@@ -5,7 +5,7 @@
 		* socket.io
 		* multer
 
-NB : Those can be easily fixed by using <h5>npm install</h5>
+<h5>NB : Those can be easily fixed by using npm install</h5>
 
 <h2>Branch compatibility with browsers :</h2>
 
@@ -38,9 +38,9 @@ NB : Those can be easily fixed by using <h5>npm install</h5>
 
 <h2>Starting the server</h2>
 
-<h4>Two options exist to start the server fom command line :</h4>
-<br><strong>-nodejs server/server.js</strong></br>
-<br><strong>-start_server.sh</strong></br>
+<h5>Two options exist to start the server fom command line :</h5>
+<br>-nodejs server/server.js</br>
+<br>-start_server.sh</br>
 
 <h2>Connecting to the server</h2>
 

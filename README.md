@@ -1,12 +1,14 @@
-##Requirements
-nodejs
+<h2>Requirements </h2>
+<h4>nodejs</h4>
 
 <h3>npm dependancies:</h3>
 
-* npm install :
-** express
-** socket.io
-** multer
+npm install :
+* express
+* socket.io
+* multer
+
+NB : Those can be easily fixed by using <h5>npm install</h5>
 
 <h2>Branch compatibility with browsers :</h2>
 
@@ -17,12 +19,12 @@ nodejs
 		<th><h4>Chrome</h4></th>
 	</tr>
 	<tr>
-		<td><h4>server</h4></td>
+		<td><h4>master</h4></td>
 		<td>Yes</td>
 		<td>Yes</td>
 	</tr>
 	<tr>
-		<td><h4>master</h4></td>
+		<td><h4>server</h4></td>
 		<td>Yes</td>
 		<td>Yes</td>
 	</tr>
@@ -32,6 +34,10 @@ nodejs
 		<td>No</td>
 	</tr>
 </table>
+
+
+<h4>(Here the master branch is only a merge from the server branch)</h4>
+
 
 <h2>Starting the server</h2>
 

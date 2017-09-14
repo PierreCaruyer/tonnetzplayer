@@ -1,9 +1,9 @@
 <h2>Dependancies </h2>
 * nodejs
-	* npm
-		* express
-		* socket.io
-		* multer
+* npm
+	* express
+	* socket.io
+	* multer
 
 <h5>NB : These npm dependancies can be easily fixed by using npm install</h5>
 

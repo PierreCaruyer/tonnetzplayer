@@ -1,12 +1,9 @@
-<h2>Requirements </h2>
+<h2>Dependancies </h2>
 <h4>nodejs</h4>
-
-<h3>npm dependancies:</h3>
-
-npm install :
-* express
-* socket.io
-* multer
+	* npm
+		* express
+		* socket.io
+		* multer
 
 NB : Those can be easily fixed by using <h5>npm install</h5>
 
@@ -36,7 +33,7 @@ NB : Those can be easily fixed by using <h5>npm install</h5>
 </table>
 
 
-<h4>(Here the master branch is only a merge from the server branch)</h4>
+<h4>NB : Here the master branch is only a merge from the server branch</h4>
 
 
 <h2>Starting the server</h2>

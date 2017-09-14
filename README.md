@@ -3,14 +3,10 @@ nodejs
 
 <h3>npm dependancies:</h3>
 
-<ul>
-<li>npm install :</li>
-<ul>
-<li><br>-express</br></li>
-<li><br>-socket.io</br></li>
-<li><br>-multer</br></li>
-</ul>
-</ul>
+1. npm install :
+	1. <br>-express</br>
+	1. <br>-socket.io</br>
+	1. <br>-multer</br>
 
 <h2>Branch compatibility with browsers :</h2>
 

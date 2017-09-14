@@ -5,7 +5,7 @@
 		* socket.io
 		* multer
 
-<h5>NB : Those can be easily fixed by using npm install</h5>
+<h5>NB : These npm dependancies can be easily fixed by using npm install</h5>
 
 <h2>Branch compatibility with browsers :</h2>
 
@@ -33,14 +33,14 @@
 </table>
 
 
-<h4>NB : Here the master branch is only a merge from the server branch</h4>
+<h5>NB : Here the master branch is only a merge from the server branch</h5>
 
 
 <h2>Starting the server</h2>
 
-<h5>Two options exist to start the server fom command line :</h5>
-<br>-nodejs server/server.js</br>
-<br>-start_server.sh</br>
+* Two options exist to start the server fom command line :
+	* nodejs server/server.js
+	* ./server.sh
 
 <h2>Connecting to the server</h2>
 

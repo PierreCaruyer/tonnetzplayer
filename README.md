@@ -5,7 +5,7 @@
 	* socket.io
 	* multer
 
-<h5>NB : These npm dependancies can be easily fixed by using <strong>npm install</strong></h5>
+NB : These npm dependancies can be easily fixed by using <strong>npm install</strong>
 
 <h2>Branch compatibility with browsers :</h2>
 

@@ -5,7 +5,7 @@
 	* socket.io
 	* multer
 
-<h5>NB : These npm dependancies can be easily fixed by using npm install</h5>
+<h5>NB : These npm dependancies can be easily fixed by using <strong>npm install</strong></h5>
 
 <h2>Branch compatibility with browsers :</h2>
 
@@ -38,7 +38,7 @@
 
 <h2>Starting the server</h2>
 
-* One last command and you're good to go
+* One last command to start the server :
 	* npm start
 
 <h2>Connecting to the server</h2>

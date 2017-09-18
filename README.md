@@ -33,14 +33,13 @@
 </table>
 
 
-<h5>NB : Here the master branch is only a merge from the server branch</h5>
+<h5>NB : Here the master branch is just a merge from the server branch</h5>
 
 
 <h2>Starting the server</h2>
 
-* Two options exist to start the server fom command line :
-	* nodejs server/server.js
-	* ./server.sh
+* One last command and you're good to go
+	* npm start
 
 <h2>Connecting to the server</h2>
 

@@ -1,11 +1,11 @@
-<h2>Dependancies </h2>
+<h2>This project requires </h2>
 * nodejs
 * npm
 	* express
 	* socket.io
 	* multer
 
-NB : These npm dependancies can be easily fixed by using <strong>npm install</strong>
+Use <strong>npm install</strong> and <strong>npm start</strong> and you're good to go.
 
 <h2>Branch compatibility with browsers :</h2>
 
@@ -14,11 +14,6 @@ NB : These npm dependancies can be easily fixed by using <strong>npm install</st
 		<th><strong>branch/browser</strong></th>
 		<th><strong>Firefox</strong></th>
 		<th><strong>Chrome</strong></th>
-	</tr>
-	<tr>
-		<td><strong>master</strong></td>
-		<td>Yes</td>
-		<td>Yes</td>
 	</tr>
 	<tr>
 		<td><strong>server</strong></td>
@@ -33,7 +28,8 @@ NB : These npm dependancies can be easily fixed by using <strong>npm install</st
 </table>
 
 
-NB : Here the master branch is just a merge from the server branch
+NB : Here the master branch is just a merge from the server branch, so using the server branch is equivalent to using the master branch.
+The <strong>local</strong> branch is an alternative version of the application that is meant to be used locally which could be useful when no internet connection is available.
 
 
 <h2>Starting the server</h2>

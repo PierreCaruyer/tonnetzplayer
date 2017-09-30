@@ -1,5 +1,4 @@
 *.mid
-*.log
 node_modules/
 uploads/
 invalid_uploads/

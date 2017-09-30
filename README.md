@@ -18,17 +18,17 @@ Enter <a href="localhost:3000">localhost:3000</a> in your browser.
 
 <table>
 	<tr>
-		<th><strong>branch/browser</strong></th>
+		<th><strong>branch / browser</strong></th>
 		<th><strong>Firefox</strong></th>
-		<th><strong>Chrome</strong></th>
+		<th><strong>Chrome / Chromium / Opera</strong></th>
 	</tr>
 	<tr>
-		<td><strong>server</strong></td>
+		<td>master</td>
 		<td>Yes</td>
 		<td>Yes</td>
 	</tr>
 	<tr>
-		<td><strong>local</strong></td>
+		<td>local</td>
 		<td>Yes</td>
 		<td>No</td>
 	</tr>

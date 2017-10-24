@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 *.mid
 node_modules/
 uploads/
 invalid_uploads/
+=======
+node_modules/
+*.mid
+>>>>>>> aee8b734b6981e2c253be6fa233b75be83d51573

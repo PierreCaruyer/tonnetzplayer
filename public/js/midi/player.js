@@ -62,7 +62,7 @@ midi.onbpmchange = function(step) {
 	}
   midi.stop();
   resetTimeline();
-  midi.loadMidiFile(midi.currentData, midi.onsuccess, midi.onprogress, midi.onfailure);
+  midi.loadFile(midi.file, midi.onsuccess, midi.onprogress, midi.onfailure);
 };
 
 var resetTimeline = function() {
@@ -155,6 +155,44 @@ midi.loadMidiFile = function(file, onsuccess, onprogress, onerror) {
 	}
 };
 
+<<<<<<< HEAD:public/js/midi/player.js
+=======
+midi.loadFile = function(file, onsuccess, onprogress, onerror) {
+  midi.file = file;
+  midi.onsuccess = onsuccess;
+  midi.onprogress = onprogress;
+  midi.onfailure = onerror;
+	if (file.indexOf('base64,') !== -1) {
+		var data = window.atob(file.split(',')[1]);
+		midi.currentData = data;
+		midi.loadMidiFile(onsuccess, onprogress, onerror);
+	} else {
+    var fetch = new XMLHttpRequest();
+		fetch.open('GET', file);
+		fetch.overrideMimeType('text/plain; charset=x-user-defined');
+		fetch.onreadystatechange = function() {
+			if (this.readyState === 4) {
+				if (this.status === 200) {
+					var t = this.responseText || '';
+					var ff = [];
+					var mx = t.length;
+					var scc = String.fromCharCode;
+					for (var z = 0; z < mx; z++) {
+						ff[z] = scc(t.charCodeAt(z) & 255);
+					}
+					var data = ff.join('');
+					midi.currentData = data;
+					midi.loadMidiFile(onsuccess, onprogress, onerror);
+				} else {
+					onerror && onerror('Unable to load MIDI file');
+				}
+			}
+		};
+		fetch.send();
+	}
+};
+
+>>>>>>> aee8b734b6981e2c253be6fa233b75be83d51573:js/midi/player.js
 var updateDisplay = function(skip) {
   var event = timeline[currentPos];
 	tonnetz.wipe();

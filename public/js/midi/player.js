@@ -155,8 +155,6 @@ midi.loadMidiFile = function(file, onsuccess, onprogress, onerror) {
 	}
 };
 
-<<<<<<< HEAD:public/js/midi/player.js
-=======
 midi.loadFile = function(file, onsuccess, onprogress, onerror) {
   midi.file = file;
   midi.onsuccess = onsuccess;
@@ -192,7 +190,6 @@ midi.loadFile = function(file, onsuccess, onprogress, onerror) {
 	}
 };
 
->>>>>>> aee8b734b6981e2c253be6fa233b75be83d51573:js/midi/player.js
 var updateDisplay = function(skip) {
   var event = timeline[currentPos];
 	tonnetz.wipe();

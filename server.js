@@ -149,7 +149,7 @@ io.sockets.on('connection', socket => {
     
     fs.access(dir, fs.F_OK, err => {
       if(err) fs.mkdir(dir)
-      fs.access(dir + '/' + file, fs.R_OK | fs.W_OK | fs.F_OK, (err) => {
+      fs.access(dir + '/' + file, fs.R_OK | fs.W_OK | fs.F_OK, err => {
         if(err) {
           console.log('could not find ' + dir + '/' + file)
           return

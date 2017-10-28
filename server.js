@@ -4,7 +4,7 @@ var app = require('express')()
 var url = require('url')
 var multer = require('multer')
 
-var server = http.createServer(app)
+const server = http.createServer(app)
 var io = require('socket.io').listen(server)
 
 const ONE_MINUTE = 60000
@@ -15,7 +15,7 @@ const INVALID_UPLOAD_DIR = './invalid-uploads'
 const PUBLIC_DIRECTORY = './public/'
 const UPLOAD_FIELDNAME = 'music-upload' //Must match with the name field of the file input in the client's form
 
-var pending_uploads = {},
+const pending_uploads = {},
     completed_uploads = {}
 
 server.listen(SERVER_PORT, () => {
@@ -28,25 +28,23 @@ server.on('close', () => {
   console.log('Shutting down server')
 })
 
-var delete_existing_dir_files = (path) => {
-  fs.access(path, fs.F_OK, err => {
-    if(!err) delete_dir_files(path)
-  })
+const delete_existing_dir_files = (path) => {
+  fs.access(path, fs.F_OK, err => { if(!err) delete_dir_files(path) })
 }
 
-var delete_uploaded_files = () => {
+const delete_uploaded_files = () => {
   delete_existing_dir_files(INVALID_UPLOAD_DIR)
   delete_existing_dir_files(VALID_UPLOAD_DIR)
 }
 
-var delete_dir_files = dir => {
+const delete_dir_files = dir => {
   fs.readdir(dir, (err, files) => {
     if(err) fs.mkdir(dir)
     files.forEach(file => fs.unlink(dir + '/' + file))
   })
 }
 
-var upload = multer({
+const upload = multer({
   dest: VALID_UPLOAD_DIR,
   limits: {
     fieldNameSize: 999999999,
@@ -56,7 +54,7 @@ var upload = multer({
   inMemory: true,
 }).single(UPLOAD_FIELDNAME)
 
-var restore_filename = file => {
+const restore_filename = file => {
   var dest = file.destination,
       correct_name = file.originalname,
       base_name = file.filename,
@@ -67,13 +65,11 @@ var restore_filename = file => {
   fs.rename(dest + '/' + base_name, upload_dest + '/' + correct_name)
 }
 
-var poke_dir = dir => {
-  fs.access(dir, fs.F_OK, err => {
-    if(err) fs.mkdir(dir)
-  })
+const poke_dir = dir => {
+  fs.access(dir, fs.F_OK, err => { if(err) fs.mkdir(dir) })
 }
 
-var poke_upload_dirs = () => {
+const poke_upload_dirs = () => {
   poke_dir(VALID_UPLOAD_DIR)
   poke_dir(INVALID_UPLOAD_DIR)
 }
@@ -82,8 +78,7 @@ var poke_upload_dirs = () => {
 app.post(API_MUSIC, (req,res) => {
   poke_upload_dirs()
   upload(req,res, err => {
-    if(err)
-      return res.status(500).end("Error occured while uploading file")
+    if(err) return res.status(500).end("Error occured while uploading file")
     if(req.file) {
       /**
        * The file is uploaded with a randomized name by the multer
@@ -105,17 +100,18 @@ app.post(API_MUSIC, (req,res) => {
       'x-sent': true
     }
   }
-  res.sendFile(url.parse(req.url).pathname, options, err => {
-    if(err) next(err)
-  })
+  res.sendFile(url.parse(req.url).pathname, options, err => { if(err) next(err) })
 })
 //END ROUTING
 
-var loadMidiFileContent = (socket, dir, file) => {
+const loadMidiFileContent = (socket, dir, file) => {
   console.log('Starting to load ' + file + '\'s midi content')
   fs.readFile(dir + file, (err, content) => {
     if(err) return
-    var data = content.map(elem => String.fromCharCode(elem & 255)).join('')
+    var array = []
+    for(var i = 0; i < content.length; i++)
+      array.push(String.fromCharCode(content[i] & 255))
+    var data = array.join('')
     socket.emit('file-parsed', {midi: data, name: file})
   })
 }
@@ -127,25 +123,28 @@ var loadMidiFileContent = (socket, dir, file) => {
 */
 app.on('upload-completed', file => {
   console.log('Finished uploading : ' + file.originalname)
-  var socket_address = pending_uploads[file.originalname]
-  completed_uploads[socket_address] = {dir: VALID_UPLOAD_DIR, name: file.originalname}
+  const socket_address = pending_uploads[file.originalname]
+  completed_uploads[socket_address] = {
+    dir: VALID_UPLOAD_DIR,
+    name: file.originalname
+  }
   delete pending_uploads[file.originalname]
 })
 
 //HANDLING SOCKET COMMUNICATION FROM HERE
 io.sockets.on('connection', socket => {
-  var socket_address = socket.request.connection.remoteAddress
+  const socket_address = socket.request.connection.remoteAddress
   console.log('New connection at : ' + socket_address)
 
   /**
    * Right after a new socket connects to the server, the socket address is checked,
    * if it is found in the completed_uploads register, it means the client is reconnecting
-   * to the server (because of the web browser refreshing after the POST request) after having uploaded its file to the server.
-   * The content of the file is then computed to be sent as a string containing the midi data.
+   * to the server (because of the web browser refreshing after the POST request) after having uploaded his file to the server.
+   * The content of the file is then computed in order to be sent as a string containing the midi data.
   **/
   if(completed_uploads[socket_address]) {
-    var dir = completed_uploads[socket_address].dir
-    var file = completed_uploads[socket_address].name
+    const dir = completed_uploads[socket_address].dir
+    const file = completed_uploads[socket_address].name
     
     fs.access(dir, fs.F_OK, err => {
       if(err) fs.mkdir(dir)
@@ -182,11 +181,6 @@ io.sockets.on('connection', socket => {
     }, 20 * ONE_MINUTE) //The upload will stay in a pending state for 20 minutes
   })                    //to prevent keeping the uploaded information in memory for too long.
 
-  socket.on('clientException', error => {
-  	console.log('Client ' +  + error.desc)
-  })
-
-  socket.on('disconnect', message => {
-    console.log('Goodbye ' + socket_address)
-  })
+  socket.on('clientException', error => { console.log('Client ' +  + error.desc) })
+  socket.on('disconnect', message => { console.log('Goodbye ' + socket_address) })
 })

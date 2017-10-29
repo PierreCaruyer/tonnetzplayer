@@ -15,8 +15,7 @@ const INVALID_UPLOAD_DIR = './invalid-uploads'
 const PUBLIC_DIRECTORY = './public/'
 const UPLOAD_FIELDNAME = 'music-upload' //Must match with the name field of the file input in the client's form
 
-const pending_uploads = {},
-    completed_uploads = {}
+const completed_uploads = {}
 
 server.listen(SERVER_PORT, () => {
   console.log('Server started to listen on port : ' + SERVER_PORT)
@@ -28,7 +27,7 @@ server.on('close', () => {
   console.log('Shutting down server')
 })
 
-const delete_existing_dir_files = (path) => {
+const delete_existing_dir_files = path => {
   fs.access(path, fs.F_OK, err => { if(!err) delete_dir_files(path) })
 }
 
@@ -77,7 +76,7 @@ const poke_upload_dirs = () => {
 //ROUTING
 app.post(API_MUSIC, (req,res) => {
   poke_upload_dirs()
-  upload(req,res, err => {
+  upload(req, res, err => {
     if(err) return res.status(500).end("Error occured while uploading file")
     if(req.file) {
       /**
@@ -85,6 +84,11 @@ app.post(API_MUSIC, (req,res) => {
        * Here we give it back its true name so that it is easier to find it back when needed
        **/
       restore_filename(req.file)
+      console.log(req.connection.remoteAddress)
+      completed_uploads[req.connection.remoteAddress] = {
+        dir: VALID_UPLOAD_DIR,
+        name: req.file.originalname
+      }
       app.emit('upload-completed', req.file)
     }
     //Here the client's page refreshes after the upload is done
@@ -115,21 +119,6 @@ const loadMidiFileContent = (socket, dir, file) => {
     socket.emit('file-parsed', {midi: data, name: file})
   })
 }
-
-/*
-** Here the name of the file is retrieved and is deleted from the pending uploads queue
-** This file name will then be used as soon as the client's page is refreshed
-** Once the client page is refreshed the midi data will be computed and sent to the client
-*/
-app.on('upload-completed', file => {
-  console.log('Finished uploading : ' + file.originalname)
-  const socket_address = pending_uploads[file.originalname]
-  completed_uploads[socket_address] = {
-    dir: VALID_UPLOAD_DIR,
-    name: file.originalname
-  }
-  delete pending_uploads[file.originalname]
-})
 
 //HANDLING SOCKET COMMUNICATION FROM HERE
 io.sockets.on('connection', socket => {
@@ -163,23 +152,6 @@ io.sockets.on('connection', socket => {
      */
     delete completed_uploads[socket_address]
   }
-
-  socket.on('midi-upload', (file) => { //here the user selected a file but did not submit yet
-    if(file.type !== 'audio/midi') {
-      var error_message = 'The ' + file.type + ' file type is not supported',
-          expected_message = 'Expected file type was : audio/midi file'
-      socket.emit('wrong-file-type', {err: error_message, exp: expected_message})
-      return
-    }
-    console.log('New pending upload : ' + file.name)
-    poke_upload_dirs()
-    pending_uploads[file.name] = socket.request.connection.remoteAddress
-    setTimeout(() => {
-      if(!pending_uploads[file.name]) return
-        delete pending_uploads[file.name]
-        socket.emit('pending-upload-deleted', 'You were iddle for too long, your upload got deleted, please retry')
-    }, 20 * ONE_MINUTE) //The upload will stay in a pending state for 20 minutes
-  })                    //to prevent keeping the uploaded information in memory for too long.
 
   socket.on('clientException', error => { console.log('Client ' +  + error.desc) })
   socket.on('disconnect', message => { console.log('Goodbye ' + socket_address) })

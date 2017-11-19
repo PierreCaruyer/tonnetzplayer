@@ -34,16 +34,11 @@ const upload = multer({
 const restore_filename = file => 
   fs.rename(file.destination + '/' + file.filename, file.destination + '/' + file.originalname)
 
-//ROUTING
 app.post(API_MUSIC, (req,res) => {
   poke(VALID_UPLOAD_DIR)
   upload(req, res, err => {
     if(err) return res.status(500).end("Error occured while uploading file")
     if(req.file) {
-      /**
-       * The file is uploaded with a randomized name by the multer
-       * Here we give it back its true name so that it is easier to find it back when needed
-       **/
       restore_filename(req.file)
       completed_uploads[req.connection.remoteAddress] = { dir: VALID_UPLOAD_DIR, name: req.file.originalname }
       app.emit('upload-completed', req.file)
@@ -59,7 +54,6 @@ app.post(API_MUSIC, (req,res) => {
   }
   res.sendFile(url.parse(req.url).pathname, options, err => next(err))
 })
-//END ROUTING
 
 const loadMidiFileContent = (socket, dir, file) => {
   console.log('Starting to load ' + file + '\'s midi content')
@@ -73,7 +67,6 @@ const loadMidiFileContent = (socket, dir, file) => {
   })
 }
 
-//HANDLING SOCKET COMMUNICATION FROM HERE
 io.sockets.on('connection', socket => {
   const socket_address = socket.request.connection.remoteAddress
   console.log('New connection at : ' + socket_address)
@@ -90,6 +83,6 @@ io.sockets.on('connection', socket => {
   fs.access(dir + file, fs.F_OK, () => loadMidiFileContent(socket, dir, file))
   delete completed_uploads[socket_address] //one-time-usage strcuture
 
-  socket.on('clientException', error => { console.log('Client ' +  + error.desc) })
+  socket.on('clientException', error => { console.log('Client ' + error.desc) })
   socket.on('disconnect', message => { console.log('Goodbye ' + socket_address) })
 })

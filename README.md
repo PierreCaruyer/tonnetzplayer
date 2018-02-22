@@ -1,10 +1,3 @@
-<h2>This project requires </h2>
-* nodejs
-* npm
-	* express
-	* socket.io
-	* multer
-
 <h2>Starting the server</h2>
 
 * <strong>npm install</strong> && <strong>npm start</strong> and you're good to go.

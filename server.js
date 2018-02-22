@@ -36,7 +36,7 @@ app.post(API_MUSIC, (req,res) => {
   res.sendFile(url.parse(req.url).pathname, options, err => next(err))
 })
 
-const toArrayBuffer = buf => {
+const toArray = buf => {
   var view = []
   for (var i = 0; i < buf.length; ++i)
       view.push(buf[i])
@@ -47,11 +47,10 @@ const loadMidiFileContent = (socket, dir, file) => {
   console.log('Starting to load ' + file + '\'s midi content')
   fs.readFile(dir + file, (err, content) => {
     if(err) return
-    socket.emit('file-parsed', {
-      midi: toArrayBuffer(content)
-        .map(value => { return String.fromCharCode(value & 255) })
-        .join(''),
-      name: file}) //Sending the data to the client
+    var computedMidiData = toArray(content)
+      .map(value => String.fromCharCode(value & 255))
+      .join('')
+    socket.emit('file-parsed', { midi: computedMidiData, name: file }) //Sending the data to the client
     fs.unlink(dir + file) //deleting the uploaded file to free up some space on the server's hard disk
     delete songs[socket.request.connection.remoteAddress]
   })

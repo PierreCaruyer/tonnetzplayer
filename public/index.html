@@ -377,7 +377,7 @@
       <canvas id="canvas"></canvas>
     </div>
 
-	<div style="margin: 0 auto; width: 300px; float: right;" id="pause">
+	<div style="margin: 0 auto; width: 300px; float: right;">
 		<form method="post" enctype="multipart/form-data" action="/uploads/music/" id=fileForm>
 			<input type="file" id="file" accept="audio/mid" name="music-upload">
 			<input type="submit" id="fileSubmit" value="Submit">
@@ -385,10 +385,8 @@
 	</div>
 
 <script type="text/javascript">
-	if (typeof (console) === "undefined") var console = {
-		log: function() {}
-	};
-	var pausePlayStop = function(stop) {
+	if (typeof (console) === "undefined") var console = { log: () => {} }
+	var pausePlayStop = stop => {
 		var pausePlayButton = document.getElementById('pausePlayStop');
 		if (stop) {
 			pausePlayButton.src = "./images/play.png";
@@ -402,7 +400,7 @@
 		}
 	};
 
-	eventjs.add(window, "load", (event) => {
+	eventjs.add(window, "load", event => {
 		var link = document.createElement("link");
 		link.href = "//fonts.googleapis.com/css?family=Oswald";
 		link.ref = "stylesheet";
@@ -416,10 +414,10 @@
 		MIDI.loader = new sketch.ui.Timer;
 		MIDI.loadPlugin({
 			soundfontUrl: "./soundfont/",
-			onprogress: function(state, progress) {
+			onprogress: (state, progress) => {
 				MIDI.loader.setValue(progress * 100);
 			},
-			onsuccess: function() {
+			onsuccess: () => {
 				player = MIDI.Player;
 				player.timeWarp = 1; // speed the song is played back
 				MIDIPlayerPercentage(player);
@@ -427,7 +425,7 @@
 		});
 	});
 
-	var MIDIPlayerPercentage = function(player) {
+	var MIDIPlayerPercentage = player => {
 		var time1 = document.getElementById("time1");
 		var time2 = document.getElementById("time2");
 		var capsule = document.getElementById("capsule");
@@ -464,30 +462,19 @@
 <script>
 
   var server_descriptor = {
-    address: 'http://localhost',
-    port: '3000'
+    address: 'http://localhost',//insert server address here
+    port: '80' //insert port 80 here
   };
 
-	var socket = io.connect(server_descriptor.address + ':' + server_descriptor.port); //insert server address here
-
-	$('#file').on('change', (event) => {
-			var files = event.target.files;
-			if(files.length > 0) //just sending a few information to the server so that it can properly send back the computed file
-				socket.emit('midi-upload', {name: files[0].name, type: files[0].type});
-	});
-
-	socket.on('file-parsed', (data) => {
-		MIDI.Player.loadMidiFile(data.midi, MIDI.Player.start);
-	});
-
-	socket.on('wrong-file-type', (content) => {
-		console.log(content.err);
-		console.log(content.exp);
-	});
-
-  socket.on('pending-upload-deleted', (message) => {
-    
-  });
+	var socket = io.connect(server_descriptor.address + ':' + server_descriptor.port)
+  socket.on('file-parsed', data => MIDI.Player.loadMidiFile(data.midi, MIDI.Player.start))
+  $('#file').on('change', event => {
+    if(event.target.files.length > 0)
+      socket.emit('midi-upload', {
+        name: event.target.files[0].name, 
+        type: event.target.files[0].type
+      })
+  })
 
 </script>
 </body>

@@ -7,7 +7,7 @@ const UPLOAD_FIELDNAME = 'music-upload' //Must match with name field of the file
 const server = require('http').createServer(app)
 const io = require('socket.io').listen(server)
 var songs = {}
-server.listen(80, () => fs.exists(UPLOAD_DIR, exists => { if(!exists) fs.mkdir(UPLOAD_DIR) }))
+server.listen(3000, () => fs.exists(UPLOAD_DIR, exists => { if(!exists) fs.mkdir(UPLOAD_DIR) }))
 const storage = multer.diskStorage({
   destination: (req, file, callback) => callback(null, UPLOAD_DIR),
   filename: (req, file, callback) => {
@@ -47,7 +47,7 @@ const sendMidiData = args => new Promise(resolve => {
   resolve(args)
 })
 
-const cleanupMidiData = args => new Promise(resolve => {
+const cleanupMidiData = args => new Promise(() => {
   fs.unlink(args.name)
   delete songs[args.socket.request.connection.remoteAddress]
 })
